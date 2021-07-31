@@ -4,6 +4,7 @@ $ENV:Path+=$sp + "\Node-Dev\node;"
 $txt = Read-Host "Do tsc compile?(Y/n)"
 If($txt -ne "n" -and $txt -ne "N"){
 	npm run tsc
+	Copy-Item -Path ./src/janho/resource -Recurse ./build/tsc/ -Force
 	pause
 }else{
 	Write-Host("`n")

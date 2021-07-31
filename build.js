@@ -74,6 +74,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/tsc/Janho.js',
             output: "./build/JanhoServer_" + __version + "_linux-x64",
+            resources: ["./build/tsc/resource/**/*"],
             asset: assets.linux,
             target: "linux-x64"
         }, function (err) {
@@ -83,6 +84,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/tsc/Janho.js',
             output: "./build/JanhoServer_" + __version + "_mac-x64",
+            resources: ["./build/tsc/resource/**/*"],
             asset: assets.mac,
             target: "mac-x64"
         }, function (err) {
@@ -92,6 +94,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/tsc/Janho.js',
             output: "./build/JanhoServer_" + __version + "_win-x64",
+            resources: ["./build/tsc/resource/**/*"],
             asset: assets.windows,
             target: "win-x64",
             rc: Object.assign({
