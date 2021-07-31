@@ -1,0 +1,120 @@
+<!--
+ *      _             _           
+ *     | | __ _ _ __ | |__   ___  
+ *  _  | |/ _` | '_ \| '_ \ / _ \ 
+ * | |_| | (_| | | | | | | | (_) |
+ *  \___/ \__,_|_| |_|_| |_|\___/ 
+ *
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * @author Saisana299
+ * @link https://github.com/Janho-Dev/Janho-Server
+ * 
+-->
+
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Janho Debug</title>
+		<link rel="stylesheet" href="./debug.css">
+	</head>
+	<body>
+		<div class="title">Protocol communication confirmation tool</div>
+		<br>
+		<div class="viewsutehai">
+			捨て牌
+			<br>
+			<div class="sutehai" id="tonsute">
+				東:
+			</div>
+			<div class="sutehai" id="nansute">
+				南:
+			</div>
+			<div class="sutehai" id="shasute">
+				西:
+			</div>
+			<div class="sutehai" id="peisute">
+				北:
+			</div>
+			<br>
+			<br>
+			鳴き牌
+			<br>
+			<div class="sutehai" id="tonnaki">
+				東:
+			</div>
+			<div class="sutehai" id="nannaki">
+				南:
+			</div>
+			<div class="sutehai" id="shanaki">
+				西:
+			</div>
+			<div class="sutehai" id="peinaki">
+				北:
+			</div>
+			<br>
+		</div>
+		<div class="view">
+			<div class="tehai">
+				<img class="hai" id="hai1">
+				<img class="hai" id="hai2">
+				<img class="hai" id="hai3">
+				<img class="hai" id="hai4">
+				<img class="hai" id="hai5">
+				<img class="hai" id="hai6">
+				<img class="hai" id="hai7">
+				<img class="hai" id="hai8">
+				<img class="hai" id="hai9">
+				<img class="hai" id="hai10">
+				<img class="hai" id="hai11">
+				<img class="hai" id="hai12">
+				<img class="hai" id="hai13">
+			</div>
+			<div class="tsumohai">
+				<img class="hai" id="tsumohai">
+			</div>
+		</div>
+		<div class="topflex">
+			<input type="text" id="msg_input" style="width:250px;">
+			<button onclick="publishMessage();" class="sbtn">送信</button>
+			　貴方は<div id="kaze">　</div>です
+		</div>
+		<div class="flex">
+			<button onclick="register();" class="btn">Register</button>
+			<button onclick="createRoom();" class="btn">CreateRoom</button>
+			<button onclick="joinRoom();" class="btn">JoinRoom</button>
+			<button onclick="readyRoom();" class="btn">ReadyRoom</button>
+			<button onclick="startRoom();" class="btn">StartRoom</button>
+		</div>
+		<div class="flex">
+			<button onclick="dahai();" class="btn">Dahai</button>
+			<button onclick="furo();" class="btn">Furo</button>
+			<button onclick="hora();" class="btn">Hora</button>
+			<button onclick="kaikan();" class="btn">Kaikan</button>
+			<button onclick="kan();" class="btn">Kan</button>
+		</div>
+		<div class="flex">
+			<button onclick="alloya();" class="btn">All+</button>
+			<button onclick="allko();" class="btn">All-</button>
+			<button onclick="skip();" class="btn">Skip</button>
+			<p class="timer" id="timer">Time: -</p>
+		</div>
+		<div class="log">
+			<ul id="log"></ul>
+		</div>
+		<script src="./socket.io.js"></script>
+		<script src="./debug.js"></script>
+	</body>
+</html>

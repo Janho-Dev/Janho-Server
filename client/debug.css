@@ -1,0 +1,87 @@
+/**
+ *      _             _           
+ *     | | __ _ _ __ | |__   ___  
+ *  _  | |/ _` | '_ \| '_ \ / _ \ 
+ * | |_| | (_| | | | | | | | (_) |
+ *  \___/ \__,_|_| |_|_| |_|\___/ 
+ *
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * @author Saisana299
+ * @link https://github.com/Janho-Dev/Janho-Server
+ * 
+ */
+
+.title{
+	margin: 0;
+	padding: 0;
+	font-size: 22px;
+	font-weight: bold;
+}
+.view{
+	display: flex;
+}
+.viewstehai{
+	display: flex;
+	padding-left: 10px;
+}
+.topflex{
+	display: flex;
+	padding: 8px;
+}
+.flex{
+	display: flex;
+	padding: 2px;
+}
+.btn{
+	margin: 2.5px;
+	height: 25px;
+	width: 90px;
+}
+.timer{
+	margin: 2.5px;
+	height: 25px;
+	width: 90px;
+}
+.sbtn{
+	height: 25px;
+}
+.log{
+	overflow: auto;
+	width: 800px;
+	height: 250px;
+	padding: 2px;
+}
+.tehai{
+	display: flex;
+	padding-left: 10px;
+}
+.tsumohai{
+	display: flex;
+	padding-left: 25px;
+}
+.hai{
+	padding-left: 1px;
+	width: auto;
+	height: 72px;
+}
+.sutehai{
+	display: inline-block;
+	padding-left: 10px;
+}
+.littlehai{
+	padding-left: 1px;
+	width: auto;
+	height: 36px;
+}
