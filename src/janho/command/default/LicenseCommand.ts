@@ -28,6 +28,7 @@ import csvParse from "csv-parse/lib/sync"
 import fs from "fs"
 import path from "path"
 import {DefaultCommand} from "./DefaultCommand"
+import {Color} from "../../utils/Color"
 
 export class LicenseCommand implements DefaultCommand {
     private readonly server: janho.Server
@@ -48,7 +49,16 @@ export class LicenseCommand implements DefaultCommand {
         }else if(args[0] === "list"){
             let rfs = fs.readFileSync(this.csv_path)
             let data = csvParse(rfs, {columns: true})
-            console.log(data)//todo
+            const listIt = require("list-it")
+            const buf = new listIt({"autoAlign": true})
+            let licenses = [["[Module name]", "[License]", "[Repository]"]]
+            for(let d of data){
+                licenses.push([d["module name"], d["license"], d["repository"]])
+            }
+            this.server.getLogger().log(
+                "info",
+                "License list\n\n" + Color.reset + Color.gray + buf.d(licenses).toString() + Color.reset + Color.white + "\n\n--END--"
+            )
         }else{
             this.server.getLogger().log("error", "")
         }

@@ -52,7 +52,7 @@ const rc = {
     'ProductVersion': __number_ver,
     'OriginalFilename': "JanhoServer_"+ __version +".exe",
     'InternalName': "JanhoServer_" + __version,
-    'LegalCopyright': "Copyright (c) Saisana299. Licensed under the AGPL v3.0"
+    'LegalCopyright': "Copyright (c) Saisana299. Licensed under the AGPL-3.0"
 };
 
 const assets = 
