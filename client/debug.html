@@ -1,0 +1,117 @@
+<!--
+ *      _             _           
+ *     | | __ _ _ __ | |__   ___  
+ *  _  | |/ _` | '_ \| '_ \ / _ \ 
+ * | |_| | (_| | | | | | | | (_) |
+ *  \___/ \__,_|_| |_|_| |_|\___/ 
+ *
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * @author Saisana299
+ * @link https://github.com/Janho-Dev/Janho-Server
+ * 
+-->
+
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Janho Debug</title>
+	</head>
+	<body>
+		<input type="text" id="msg_input" style="width:500px;">
+		<button onclick="publishMessage();">送信</button>
+		<br>
+		<button onclick="register();">Register</button><br>
+		<button onclick="createRoom();">CreateRoom</button><br>
+		<button onclick="joinRoom();">JoinRoom</button><br>
+		<button onclick="readyRoom();">ReadyRoom</button><br>
+		<button onclick="startRoom();">StartRoom</button><br>
+		<div id="msg"></div>
+		<div id="system_text"></div>
+		<ul id="log"></ul>
+		<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js"></script>-->
+		<script src="./socket.io.js"></script>
+		<script>
+		var systemText = document.querySelector("#system_text");
+
+		var websocketUrl = "http://localhost:3000/";
+		var socket = io.connect(websocketUrl);
+		socket.on("janho", function(data){
+			const log = document.querySelector("#log");
+			const logline = document.createElement("line");
+			const date = new Date();
+			const time = date.toLocaleTimeString();
+			logline.innerHTML = `[${time}] REC ${data}<br>`;
+			log.insertBefore(logline, log.firstChild);
+		});
+		function emit(data){
+			socket.emit("janho", data);
+
+			const log = document.querySelector("#log");
+			const logline = document.createElement("line");
+			const date = new Date();
+			const time = date.toLocaleTimeString();
+			logline.innerHTML = `[${time}] EMIT ${data}<br>`;
+			log.insertBefore(logline, log.firstChild);
+		}
+
+		function publishMessage(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			emit(msg);
+		}
+		function register(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			var data = JSON.stringify({"protocol": "register", "name": msg})
+			emit(data);
+		}
+		function createRoom(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			var data = JSON.stringify({"protocol": "createRoom", "roomId": msg});
+			emit(data);
+		}
+		function joinRoom(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			var data = JSON.stringify({"protocol": "joinRoom", "roomId": msg});
+			emit(data);
+		}
+		function readyRoom(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			if(msg === "true"){
+				var bmsg = true;
+			}else{
+				var bmsg = false;
+			}
+			var data = JSON.stringify({"protocol": "readyRoom", "bool": bmsg});
+			emit(data);
+		}
+		function startRoom(){
+			var textInput = document.querySelector("#msg_input");
+			var msg = textInput.value;
+			if(msg === "true"){
+				var bmsg = true;
+			}else{
+				var bmsg = false;
+			}
+			var data = JSON.stringify({"protocol": "startRoom", "bool": bmsg});
+			emit(data);
+		}
+		</script>
+	</body>
+</html>
