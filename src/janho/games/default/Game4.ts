@@ -23,11 +23,6 @@
  * 
  */
 
-/**
- * TODO LIST
- * ・ツモ前、skipをサーバー側でtimeoutになると次のツモ後に打牌できなくなる
- */
-
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
 import {Game} from "../Game"

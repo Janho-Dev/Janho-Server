@@ -31,6 +31,7 @@ import {Protocol} from "./protocol/Protocol"
 import {Logger} from "./Logger"
 import {CommandReader} from "./command/CommandReader"
 import {Status} from "./Status"
+import {PluginManager} from "./plugin/PluginManager"
 
 export class Server {
 	private readonly io: socketio.Server
@@ -39,6 +40,7 @@ export class Server {
 	private readonly logger: Logger
 	private readonly status: Status
 	private readonly listener: GameListener
+	private readonly plugin: PluginManager
 	private users: {[key: string]: string} = {}
 	private players: {[key: string]: string} = {}
 	private rooms: {[key: string]: Game} = {}
@@ -50,6 +52,7 @@ export class Server {
 		this.logger = new Logger()
 		this.status = new Status(this)
 		this.listener = new GameListener(this)
+		this.plugin = new PluginManager(this)
 	}
 
 	/**
@@ -252,5 +255,9 @@ export class Server {
 
 	public getListener(): GameListener{
 		return this.listener
+	}
+
+	public getPluginManager(): PluginManager{
+		return this.plugin
 	}
 }

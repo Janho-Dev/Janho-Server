@@ -46,6 +46,7 @@ const io: socketio.Server = new socketio.Server(hoster, {
     }
 })
 const server: janho.Server = new janho.Server(io)
+const port = 3000
 
 //コネクション処理
 io.on("connection", (socket: socketio.Socket) => {
@@ -70,21 +71,6 @@ io.on("connection", (socket: socketio.Socket) => {
     })
 })
 
-//3000番ポートで開く
-hoster.listen(3000, () => {
-    server.getLogger().log("success", `Janho Server ${VersionInfo.VERSION}. -The online mahjong software-`)
-    if(VersionInfo.IS_DEVELOPMENT_BUILD){
-        server.getLogger().log("warning", "This build is a development version.")
-        server.getLogger().log("warning", "We recommend using a stable version that does not contain any serious bugs.")
-    }
-    server.getLogger().log("info", `This server is running Janho Client version 1.x.x`)
-    server.getLogger().log("info", "Janho Server is distributed under the GNU Affero General Public License version 3.")
-    server.getLogger().log("info", "Server was started on *:3000")
-    const E_TIME = performance.now()
-    const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
-    server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
-})
-
 //プログラム停止時
 process.on("exit", (code: number) => {
     server.getLogger().log("info", "Server was stopped with exit code " + code + ".\n")
@@ -95,7 +81,7 @@ process.on("uncaughtException", function(error) {
     console.error("Caught exception: " + error.message + "\n")
     console.error(error.stack + "\n")
     const date = new Date()
-    const dir = path.resolve(__dirname, "..", "..", "error-report")
+    const dir = path.resolve(__dirname, "..", "..", "crash-report")
     if(!fs.existsSync(dir)){
         try{
             fs.mkdirSync(dir)
@@ -107,7 +93,7 @@ process.on("uncaughtException", function(error) {
     const log_file_err = fs.createWriteStream
     (
         dir
-        + `/Error-${date.getFullYear()}-${("0"+date.getMonth()).slice(-2)}-${("0"+date.getDate()).slice(-2)}`
+        + `/Crash-${date.getFullYear()}-${("0"+date.getMonth()).slice(-2)}-${("0"+date.getDate()).slice(-2)}`
         + `_${("0"+date.getHours()).slice(-2)}.${("0"+date.getMinutes()).slice(-2)}.${("0"+date.getSeconds()).slice(-2)}.log`,
         {flags:'a'}
     )
@@ -117,3 +103,33 @@ process.on("uncaughtException", function(error) {
         process.exit(1)
     })
 })
+
+async function execute(){
+    server.getLogger().log("success", `Janho Server ${VersionInfo.VERSION}. -The online mahjong software-`)
+    if(VersionInfo.IS_DEVELOPMENT_BUILD){
+        server.getLogger().log("warning", "This build is a development version.")
+        server.getLogger().log("warning", "We recommend using a stable version that does not contain any serious bugs.")
+    }
+    server.getLogger().log("info", `This server is running Janho Client version 1.x.x`)
+    server.getLogger().log("info", "Janho Server is distributed under the GNU Affero General Public License version 3.")
+
+    const loadPlugins = () => {
+        //pluginロード
+        return new Promise<void>((resolve, reject) => {
+            server.getLogger().log("info", "Loading plugins...")
+            server.getPluginManager().load()
+            resolve()
+        })
+    }
+    await loadPlugins()
+
+    //port番ポートで開く
+    hoster.listen(port, () => {
+        server.getLogger().log("info", `Server was started on *:${port}`)
+        const E_TIME = performance.now()
+        const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
+        server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
+    })
+}
+
+execute()

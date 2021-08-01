@@ -17,16 +17,21 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-67"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 67
-    static readonly INTERNAL_VERSION = 0.67
+import * as janho from "../Server"
+import {Plugin} from "./Plugin";
+
+export class PluginBase implements Plugin {
+    readonly server: janho.Server
+
+    constructor(server: janho.Server){
+        this.server = server
+    }
+
+    onEnable(): void {}
 }
