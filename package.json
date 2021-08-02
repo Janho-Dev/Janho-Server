@@ -1,7 +1,7 @@
 {
-  "name": "janho",
+  "name": "janho-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./build/src/janho/Janho.js",
   "dependencies": {
     "csv": "^5.5.0",
     "express": "^4.17.1",

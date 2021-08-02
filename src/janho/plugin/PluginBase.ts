@@ -26,7 +26,7 @@
 import * as janho from "../Server"
 import {Plugin} from "./Plugin";
 
-export class PluginBase implements Plugin {
+export abstract class PluginBase implements Plugin {
     readonly server: janho.Server
 
     constructor(server: janho.Server){

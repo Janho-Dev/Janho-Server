@@ -42,6 +42,13 @@ try{
     console.error(error);
 };
 
+const assets = 
+{
+    windows: "./build/asset/windows-x64-14.15.3",
+    linux: './build/asset/linux-x64-14.15.3',
+    mac: './build/asset/mac-x64-14.15.3'
+};
+
 const __version = `dev-${version}`
 const __number_ver = version / 10**version.toString().length
 const rc = {
@@ -55,13 +62,6 @@ const rc = {
     'LegalCopyright': "Copyright (c) Saisana299. Licensed under the AGPL-3.0"
 };
 
-const assets = 
-{
-    windows: './build/asset/windows-x64-14.15.3',
-    linux: './build/asset/linux-x64-14.15.3',
-    mac: './build/asset/mac-x64-14.15.3'
-};
-
 async function exists(filename) {
     try {
         return (await fs.promises.stat(filename)).size > 0
@@ -70,32 +70,14 @@ async function exists(filename) {
 }
 
 (async function () {
-    if(platform === "linux"){
-        await nexe.compile({
-            input: './build/tsc/Janho.js',
-            output: "./build/JanhoServer_" + __version + "_linux-x64",
-            resources: ["./build/tsc/resource/**/*"],
-            asset: assets.linux,
-            target: "linux-x64"
-        }, function (err) {
-            if (err) console.log(err);
-        });
-    }else if(platform === "mac"){
-        await nexe.compile({
-            input: './build/tsc/Janho.js',
-            output: "./build/JanhoServer_" + __version + "_mac-x64",
-            resources: ["./build/tsc/resource/**/*"],
-            asset: assets.mac,
-            target: "mac-x64"
-        }, function (err) {
-            if (err) console.log(err);
-        });
-    }else if(platform === "windows"){
+    if(platform === "windows"){
         await nexe.compile({
             input: './build/tsc/Janho.js',
             output: "./build/JanhoServer_" + __version + "_win-x64",
             resources: ["./build/tsc/resource/**/*"],
             asset: assets.windows,
+			temp: "../node/.nexe",
+            flags: ["--experimental-modules"],
             target: "win-x64",
             rc: Object.assign({
                 'PRODUCTVERSION': __number_ver,
@@ -113,10 +95,34 @@ async function exists(filename) {
                         });
                     }
                     return next()
-                }
-            ]
+				}
+			]
+		}, function(err){
+			if(err) console.error(err);
+		});
+	}else if(platform === "linux"){
+        await nexe.compile({
+            input: './build/tsc/Janho.js',
+            output: "./build/JanhoServer_" + __version + "_linux-x64",
+            resources: ["./build/tsc/resource/**/*"],
+            asset: assets.linux,
+			temp: "../node/.nexe",
+            flags: ["--experimental-modules"],
+            target: "linux-x64"
         }, function (err) {
             if (err) console.log(err);
         });
-    }
+    }else if(platform === "mac"){
+        await nexe.compile({
+            input: './build/tsc/Janho.js',
+            output: "./build/JanhoServer_" + __version + "_mac-x64",
+            resources: ["./build/tsc/resource/**/*"],
+            asset: assets.mac,
+			temp: "../node/.nexe",
+            flags: ["--experimental-modules"],
+            target: "mac-x64"
+        }, function (err) {
+            if (err) console.log(err);
+        });
+	}
 })().catch(console.error);
