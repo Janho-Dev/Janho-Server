@@ -23,6 +23,8 @@
  * 
  */
 
+require("janho-server-dev") //Comment out if you don't build to js
+
 import * as express from "express"
 import * as http from "http"
 import * as socketio from "socket.io"
@@ -73,6 +75,7 @@ io.on("connection", (socket: socketio.Socket) => {
 
 //プログラム停止時
 process.on("exit", (code: number) => {
+    server.getPluginManager().unload()
     server.getLogger().log("info", "Server was stopped with exit code " + code + ".\n")
 })
 
@@ -116,7 +119,7 @@ async function execute(){
     const loadPlugins = () => {
         //pluginロード
         return new Promise<void>((resolve, reject) => {
-            server.getLogger().log("info", "Loading plugins...")
+            server.getLogger().log("info", "Preparing to load the plugin...")
             server.getPluginManager().load()
             resolve()
         })

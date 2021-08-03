@@ -23,66 +23,20 @@
  * 
  */
 
-/**
-import * as Types from "./utils/Types"
-import {Color} from "./utils/Color"
+import * as Types from "../utils/Types"
+import {Logger} from "../Logger"
 
-export class Logger {
-    private debug: boolean
-    private exception: Types.log_exception
+export class PluginLogger {
+    private readonly logger: Logger
+    private readonly plugin_name: string
 
-    constructor(){
-        this.debug = false
-        this.exception = {"": false}
+    constructor(plugin_name: string, logger: Logger){
+        this.plugin_name = plugin_name
+        this.logger = logger
     }
 
     public log(level: Types.level_type, message: any, id?: Types.log_id){
-        if(id !== undefined){
-            if(this.exception[id]) return
-        }
-        const time = "[" + this.getTimeStr() + "] "
-        switch(level){
-            case "debug":
-                if(this.debug)
-                this.send(Color.white + time + Color.reset + Color.gray + "[DEBUG]: " + message)
-                break
-            case "info":
-                this.send(Color.white + time + Color.reset + Color.white + "[INFO]: " + message)
-                break
-            case "notice":
-                this.send(Color.white + time + Color.reset + Color.cyan + "[NOTICE]: " + message)
-                break
-            case "warning":
-                this.send(Color.white + time + Color.reset + Color.yellow + "[WARNING]: " + message)
-                break
-            case "error":
-                this.send(Color.white + time + Color.reset + Color.red + "[ERROR]: " + message)
-                break
-            case "success":
-                this.send(Color.white + time + Color.reset + Color.green + "[SUCCESS]: " + message)
-        }
-    }
-
-    public send(message: string){
-        console.log(message + Color.reset)
-    }
-
-    public getTimeStr(): string{
-        const date = new Date()
-        const timeStr = String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") + ":" + String(date.getSeconds()).padStart(2, "0")
-        return timeStr
-    }
-
-    public setDebug(bool: boolean, log: boolean = true){
-        this.debug = bool
-        if(log) this.log("notice", "Debug mode changed to " + bool + ".")
-    }
-    public getDebug(): boolean{
-        return this.debug
-    }
-
-    public newLine(){
-        console.log("")
+        this.logger.log(level, `[${this.plugin_name}] ` + message, id)
     }
 }
-*/
+module.exports.PluginLogger = PluginLogger

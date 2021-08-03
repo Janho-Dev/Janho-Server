@@ -25,4 +25,5 @@
 
 export interface Plugin {
     onEnable(): void
+    onDisable(): void
 }

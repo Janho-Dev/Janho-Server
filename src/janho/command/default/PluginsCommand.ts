@@ -25,40 +25,36 @@
 
 import * as janho from "../../Server"
 import {Color} from "../../utils/Color"
-import {Command} from "../Command"
 import {DefaultCommand} from "./DefaultCommand"
 
-export class HelpCommand implements DefaultCommand {
+export class PluginsCommand implements DefaultCommand {
     private readonly server: janho.Server
-    private readonly command: Command
     readonly description: string
     readonly usage: string
 
-    constructor(server: janho.Server, command: Command){
+    constructor(server: janho.Server){
         this.server = server
-        this.command = command
-        this.description = "Display a list of commands."
-        this.usage = "help [\"command\"]"
+        this.description = "Display a list of plugins."
+        this.usage = "plugins [\"plugin name\"]"
     }
 
     public execute(args: string[]){
         if(args.length === 0){
-            const commands = this.command.getAllCommand()
-            this.server.getLogger().log("info", "----- Command help -----")
-            for(const [command, commandClass] of Object.entries(commands)){
-                this.server.getLogger().log("info", Color.green + command + Color.reset + " - " + commandClass.description)
-            }
+            const plugins = this.server.getPluginManager().getPluginList()
+            const str = plugins.join(", ")
+            this.server.getLogger().log("info", `Plugins(${plugins.length}): ${str}`)
             this.server.getLogger().newLine()
-            this.server.getLogger().log("info", "You can see more detailed usage with \"help <\"command name\">\".")
+            this.server.getLogger().log("info", "You can see more detailed usage with \"plugins <\"plugin name\">\".")
             return
         }
-        const result = this.command.getCommand(args[0])
+        const result = this.server.getPluginManager().getPluginJson(args[0])
         if(result === null){
-            this.server.getLogger().log("error", "There is no such command.")
+            this.server.getLogger().log("error", "There is no such plugin.")
         }else{
-            this.server.getLogger().log("info", Color.green + args[0])
+            this.server.getLogger().log("info", Color.green + result.name)
+            this.server.getLogger().log("info", "Ver - " + result.version)
             this.server.getLogger().log("info", "Description - " + result.description)
-            this.server.getLogger().log("info", "Usage - " + result.usage)
+            this.server.getLogger().log("info", "Author - " + result.author)
         }
     }
 }

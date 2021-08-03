@@ -127,6 +127,7 @@ fresh,MIT,https://github.com/jshttp/fresh
 from2,MIT,https://github.com/hughsk/from2
 fs-constants,MIT,https://github.com/mafintosh/fs-constants
 fs.realpath,ISC,https://github.com/isaacs/fs.realpath
+fsevents,MIT,https://github.com/fsevents/fsevents
 function-bind,MIT,https://github.com/Raynos/function-bind
 get-intrinsic,MIT,https://github.com/ljharb/get-intrinsic
 get-proxy,MIT,https://github.com/kevva/get-proxy

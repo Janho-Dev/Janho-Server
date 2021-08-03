@@ -72,7 +72,7 @@ async function exists(filename) {
 (async function () {
     if(platform === "windows"){
         await nexe.compile({
-            input: './build/tsc/Janho.js',
+            input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_win-x64",
             resources: ["./build/tsc/resource/**/*"],
             asset: assets.windows,
@@ -102,7 +102,7 @@ async function exists(filename) {
 		});
 	}else if(platform === "linux"){
         await nexe.compile({
-            input: './build/tsc/Janho.js',
+            input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_linux-x64",
             resources: ["./build/tsc/resource/**/*"],
             asset: assets.linux,
@@ -114,7 +114,7 @@ async function exists(filename) {
         });
     }else if(platform === "mac"){
         await nexe.compile({
-            input: './build/tsc/Janho.js',
+            input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_mac-x64",
             resources: ["./build/tsc/resource/**/*"],
             asset: assets.mac,
