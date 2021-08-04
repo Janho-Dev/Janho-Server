@@ -28,8 +28,8 @@ import {Plugin} from "./Plugin";
 import {PluginLogger} from "./PluginLogger"
 
 export abstract class PluginBase implements Plugin {
-    readonly server: janho.Server
-    readonly logger: PluginLogger
+    protected readonly server: janho.Server
+    protected readonly logger: PluginLogger
 
     constructor(server: janho.Server, logger: PluginLogger){
         this.server = server

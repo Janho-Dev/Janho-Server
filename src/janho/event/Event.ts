@@ -23,24 +23,18 @@
  * 
  */
 
-import * as janho from "../Server"
 import {EventEmitter} from "./EventEmitter"
 import {EventPort} from "./EventPort"
-import {EventListener} from "./EventListener"
 
 export class Event{
     private readonly emitter: EventEmitter
-    private readonly listener: EventListener
     private readonly _socketConnectEvent: EventPort<(socketId: string) => void>
     private readonly _socketDisconnectEvent: EventPort<(socketId: string) => void>
 
-    constructor(server: janho.Server){
+    constructor(){
         this.emitter = new EventEmitter()
         this._socketConnectEvent = new EventPort("socketConnect", this.emitter)
         this._socketDisconnectEvent = new EventPort("socketDisconnect", this.emitter)
-        
-        //last
-        this.listener = new EventListener(this, server)
     }
 
     public get socketConnectEvent(){ return this._socketConnectEvent }
@@ -57,18 +51,12 @@ export class Event{
 
     private traceCheck(value: string): boolean{
         const trace = new Error().stack
-        if(trace !== undefined){
-            const pre_splited = trace.split("\n")[3]
-            if(pre_splited !== undefined){
-                const splited = pre_splited.split(" ")
-                if(splited[5] === value){
-                    return true
-                }else{
-                    return false
-                }
-            }else{
-                return false
-            }
+        if(trace === undefined) return false
+        const pre_splited = trace.split("\n")[3]
+        if(pre_splited === undefined) return false
+        const splited = pre_splited.split(" ")
+        if(splited[5] === value){
+            return true
         }else{
             return false
         }

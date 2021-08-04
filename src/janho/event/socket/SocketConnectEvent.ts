@@ -24,17 +24,15 @@
  */
 
 import {Event} from "../Event";
+import {SocketEvent} from "./SocketEvent";
 
-export class SocketDisconnectEvent{
-    private readonly event: Event
-    private readonly socketId: string
+export class SocketConnectEvent extends SocketEvent{
 
     constructor(event: Event, socketId: string){
-        this.event = event
-        this.socketId = socketId
+        super(event, socketId)
     }
 
     public emit(): boolean{
-        return this.event.socketDisconnect(this.socketId)
+        return this.event.socketConnect(this.socketId)
     }
 }

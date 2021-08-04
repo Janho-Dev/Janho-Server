@@ -55,7 +55,7 @@ export class Server {
 		this.status = new Status(this)
 		this.listener = new GameListener(this)
 		this.plugin = new PluginManager(this)
-		this.event = new Event(this)
+		this.event = new Event()
 	}
 
 	/**
@@ -242,6 +242,13 @@ export class Server {
 		this.network.receive(socketId, data)
 		this.logger.log("debug", "REC " + socketId)
 		this.logger.log("debug", data)
+	}
+
+	public enableStatus(): boolean{
+		return this.status.enable()
+	}
+	public disableStatus(): boolean{
+		return this.status.disable()
 	}
 
 	public getProtocol(): Protocol{

@@ -23,16 +23,14 @@
  * 
  */
 
-import * as janho from "../Server"
-import {Event} from "./Event";
+import {Event} from "../Event";
+import {EventBase} from "../EventBase";
 
-export class EventListener{
-    constructor(event: Event, server: janho.Server){
-        event.socketConnectEvent.on(socketId => {
-            server.getLogger().log("debug", `Socket.io connected => ${socketId}`)
-        })
-        event.socketDisconnectEvent.on(socketId => {
-            server.getLogger().log("debug", `Socket.io disconnected => ${socketId}`)
-        })
+export abstract class SocketEvent extends EventBase{
+    protected readonly socketId: string
+
+    constructor(event: Event, socketId: string){
+        super(event)
+        this.socketId = socketId
     }
 }

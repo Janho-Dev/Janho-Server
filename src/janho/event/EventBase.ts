@@ -23,18 +23,12 @@
  * 
  */
 
-import {Event} from "../Event";
+import {Event} from "./Event";
 
-export class SocketConnectEvent{
-    private readonly event: Event
-    private readonly socketId: string
+export abstract class EventBase{
+    protected readonly event: Event
 
-    constructor(event: Event, socketId: string){
+    constructor(event: Event){
         this.event = event
-        this.socketId = socketId
-    }
-
-    public emit(): boolean{
-        return this.event.socketConnect(this.socketId)
     }
 }

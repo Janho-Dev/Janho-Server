@@ -71,6 +71,7 @@ export class Status {
         }, 1000)
         return true
     }
+    
     public disable(): boolean{
         if(this.timer){
             clearInterval(this.timer)

@@ -35,8 +35,8 @@ import path from "path"
 import {performance} from "perf_hooks"
 import {Judge} from "./utils/Judge"
 import {VersionInfo} from "./VersionInfo"
-import {SocketConnectEvent} from "./event/server/SocketConnectEvent"
-import {SocketDisconnectEvent} from "./event/server/SocketDisconnectEvent"
+import {SocketConnectEvent} from "./event/socket/SocketConnectEvent"
+import {SocketDisconnectEvent} from "./event/socket/SocketDisconnectEvent"
 
 const S_TIME = performance.now()
 
