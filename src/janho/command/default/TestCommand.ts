@@ -17,16 +17,27 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-72"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 72
-    static readonly INTERNAL_VERSION = 0.72
+import * as janho from "../../Server"
+import {DefaultCommand} from "./DefaultCommand"
+
+export class TestCommand implements DefaultCommand {
+    private readonly server: janho.Server
+    readonly description: string
+    readonly usage: string
+
+    constructor(server: janho.Server){
+        this.server = server
+        this.description = "Emit test event."
+        this.usage = "test"
+    }
+
+    public execute(args: string[]){
+        this.server.getEvent().test("Test Event Emited.")
+    }
 }

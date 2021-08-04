@@ -133,6 +133,9 @@ async function execute(){
         const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
         server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
     })
+
+    //test
+    server.getEvent().testEvent.on(value => console.log(value))
 }
 
 execute()

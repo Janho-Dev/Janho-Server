@@ -17,16 +17,24 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-72"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 72
-    static readonly INTERNAL_VERSION = 0.72
+import {EventEmitter} from "./EventEmitter"
+import {EventPort} from "./EventPort"
+
+export class Event{
+    private readonly eventEmitter: EventEmitter
+    private readonly _testEvent: EventPort<(msg: string) => void>
+
+    constructor(){
+        this.eventEmitter = new EventEmitter()
+        this._testEvent = new EventPort("testCalled", this.eventEmitter)
+    }
+
+    public get testEvent(){ return this._testEvent }
+    public test(msg: string){ this.eventEmitter.emit(this._testEvent, msg) }
 }
