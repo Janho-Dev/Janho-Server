@@ -55,7 +55,7 @@ export class Server {
 		this.status = new Status(this)
 		this.listener = new GameListener(this)
 		this.plugin = new PluginManager(this)
-		this.event = new Event()
+		this.event = new Event(this)
 	}
 
 	/**

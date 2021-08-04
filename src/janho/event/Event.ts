@@ -23,18 +23,54 @@
  * 
  */
 
+import * as janho from "../Server"
 import {EventEmitter} from "./EventEmitter"
 import {EventPort} from "./EventPort"
+import {EventListener} from "./EventListener"
 
 export class Event{
-    private readonly eventEmitter: EventEmitter
-    private readonly _testEvent: EventPort<(msg: string) => void>
+    private readonly emitter: EventEmitter
+    private readonly listener: EventListener
+    private readonly _socketConnectEvent: EventPort<(socketId: string) => void>
+    private readonly _socketDisconnectEvent: EventPort<(socketId: string) => void>
 
-    constructor(){
-        this.eventEmitter = new EventEmitter()
-        this._testEvent = new EventPort("testCalled", this.eventEmitter)
+    constructor(server: janho.Server){
+        this.emitter = new EventEmitter()
+        this._socketConnectEvent = new EventPort("socketConnect", this.emitter)
+        this._socketDisconnectEvent = new EventPort("socketDisconnect", this.emitter)
+        
+        //last
+        this.listener = new EventListener(this, server)
     }
 
-    public get testEvent(){ return this._testEvent }
-    public test(msg: string){ this.eventEmitter.emit(this._testEvent, msg) }
+    public get socketConnectEvent(){ return this._socketConnectEvent }
+    public get socketDisconnectEvent(){ return this._socketDisconnectEvent }
+
+    public socketConnect(socketId: string): boolean{
+        if(!(this.traceCheck("SocketConnectEvent.emit"))) return false
+        return this.emitter.emit(this._socketConnectEvent, socketId)
+    }
+    public socketDisconnect(socketId: string): boolean{
+        if(!(this.traceCheck("SocketDisconnectEvent.emit"))) return false
+        return this.emitter.emit(this._socketDisconnectEvent, socketId)
+    }
+
+    private traceCheck(value: string): boolean{
+        const trace = new Error().stack
+        if(trace !== undefined){
+            const pre_splited = trace.split("\n")[3]
+            if(pre_splited !== undefined){
+                const splited = pre_splited.split(" ")
+                if(splited[5] === value){
+                    return true
+                }else{
+                    return false
+                }
+            }else{
+                return false
+            }
+        }else{
+            return false
+        }
+    }
 }

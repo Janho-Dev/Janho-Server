@@ -35,6 +35,8 @@ import path from "path"
 import {performance} from "perf_hooks"
 import {Judge} from "./utils/Judge"
 import {VersionInfo} from "./VersionInfo"
+import {SocketConnectEvent} from "./event/server/SocketConnectEvent"
+import {SocketDisconnectEvent} from "./event/server/SocketDisconnectEvent"
 
 const S_TIME = performance.now()
 
@@ -52,7 +54,9 @@ const port = 3000
 
 //コネクション処理
 io.on("connection", (socket: socketio.Socket) => {
+    new SocketConnectEvent(server.getEvent(), socket.id).emit()
     socket.on("disconnect", () => {
+        new SocketDisconnectEvent(server.getEvent(), socket.id).emit()
         server.dead(socket.id)
     })
     socket.on("janho", (data: string) => {
@@ -133,9 +137,6 @@ async function execute(){
         const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
         server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
     })
-
-    //test
-    server.getEvent().testEvent.on(value => console.log(value))
 }
 
 execute()

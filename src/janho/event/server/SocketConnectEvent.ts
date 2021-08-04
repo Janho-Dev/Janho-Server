@@ -23,21 +23,18 @@
  * 
  */
 
-import * as janho from "../../Server"
-import {DefaultCommand} from "./DefaultCommand"
+import {Event} from "../Event";
 
-export class TestCommand implements DefaultCommand {
-    private readonly server: janho.Server
-    readonly description: string
-    readonly usage: string
+export class SocketConnectEvent{
+    private readonly event: Event
+    private readonly socketId: string
 
-    constructor(server: janho.Server){
-        this.server = server
-        this.description = "Emit test event."
-        this.usage = "test"
+    constructor(event: Event, socketId: string){
+        this.event = event
+        this.socketId = socketId
     }
 
-    public execute(args: string[]){
-        this.server.getEvent().test("Test Event Emited.")
+    public emit(): boolean{
+        return this.event.socketConnect(this.socketId)
     }
 }
