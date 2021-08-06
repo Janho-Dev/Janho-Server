@@ -45,7 +45,7 @@ const hoster: http.Server = http.createServer(app)
 const io: socketio.Server = new socketio.Server(hoster, {
     allowEIO3: true,
     cors: {
-        origin: "file://",
+        origin: ["file://", "http://localhost:7456"],
         methods: ["GET", "POST"]
     }
 })
