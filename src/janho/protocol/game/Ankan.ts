@@ -26,7 +26,7 @@
 import * as janho from "../../Server"
 import {JanhoProtocol} from "../JanhoProtocol"
 
-export class Kan implements JanhoProtocol {
+export class Ankan implements JanhoProtocol {
     private readonly server: janho.Server
     
     constructor(server: janho.Server){
@@ -43,9 +43,9 @@ export class Kan implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onKan(kaze, parsed["hai"])
-                        if(result) this.procEmit(socketId, {"protocol": "kan", "result": true})
-                        else this.procEmit(socketId, {"protocol": "kan", "result": false})
+                        const result = room.onAnkan(kaze, parsed["hai"])
+                        if(result) this.procEmit(socketId, {"protocol": "ankan", "result": true})
+                        else this.procEmit(socketId, {"protocol": "ankan", "result": false})
                     }
                 }
             }

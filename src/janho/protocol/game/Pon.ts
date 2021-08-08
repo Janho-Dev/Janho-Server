@@ -22,11 +22,11 @@
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
-/*
+
 import * as janho from "../../Server"
 import {JanhoProtocol} from "../JanhoProtocol"
 
-export class Kaikan implements JanhoProtocol {
+export class Pon implements JanhoProtocol {
     private readonly server: janho.Server
     
     constructor(server: janho.Server){
@@ -36,9 +36,9 @@ export class Kaikan implements JanhoProtocol {
     public procReceive(socketId: string, data: string): void{
         const parsed = JSON.parse(data)
         if("hai" in parsed){
-            if(Array.isArray(parsed["hai"])){
-                if(parsed["hai"].length !== 4) return
-                for(let hai of parsed["hai"]){
+            if(typeof parsed["hai"] === "number" && Array.isArray(parsed["combi"])){
+                if(parsed["combi"].length !== 3) return
+                for(let hai of parsed["combi"]){
                     if(typeof hai !== "number") return
                 }
                 const roomId = this.server.getPlayerRoomId(socketId)
@@ -47,9 +47,9 @@ export class Kaikan implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onKaikan(kaze, parsed["hai"])
-                        if(result) this.procEmit(socketId, {"protocol": "kaiKan", "result": true})
-                        else this.procEmit(socketId, {"protocol": "kaiKan", "result": false})
+                        const result = room.onPon(kaze, parsed["hai"], parsed["combi"])
+                        if(result) this.procEmit(socketId, {"protocol": "pon", "result": true})
+                        else this.procEmit(socketId, {"protocol": "pon", "result": false})
                     }
                 }
             }
@@ -60,4 +60,4 @@ export class Kaikan implements JanhoProtocol {
         const data = JSON.stringify(json)
         this.server.emitData(socketId, data)
     }
-}*/
+}

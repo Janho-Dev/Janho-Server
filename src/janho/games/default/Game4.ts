@@ -57,7 +57,7 @@ export class Game4 implements Game {
 
     private kaze: Types.kaze_number
     private event: Types.event
-    private waitRes: {[key: string]: {"protocol": {[key: string]: number[]}}}
+    private waitRes: {[key: string]: {"protocol": Types.wait_res}}
 
     private point: {[key in Types.kaze_number]: number}
 
@@ -380,7 +380,7 @@ export class Game4 implements Game {
      * @param tsumoHai 牌ID
      * @returns string[]
      */
-    private tsumoCheck(kaze: Types.kaze_number, tsumoHai: number): {[key: string]: number[]}{
+    private tsumoCheck(kaze: Types.kaze_number, tsumoHai: number): Types.wait_res{
         let bakaze: Types.kaze_number
         if(this.info["bakaze"] === 0) bakaze = 0
         else if(this.info["bakaze"] === 1) bakaze = 1
@@ -395,17 +395,19 @@ export class Game4 implements Game {
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
-        let result: {[key: string]: number[]} = {"dahai": []}
+        const tehai = this.tehai[kaze]["hai"].slice()
+        tehai.push(tsumoHai)
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "data": []}}
         if(hora.yakuhai.length !== 0){
-            result["hora"] = [tsumoHai]
+            result["hora"] = {"hai": [tsumoHai], "data": []}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = [tsumoHai]
+            result["ankan"] = {"hai": [tsumoHai], "data": []}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = [tsumoHai]
+            result["kakan"] = {"hai": [tsumoHai], "data": []}
         }
 
         return result
@@ -419,7 +421,7 @@ export class Game4 implements Game {
      * クライアントからの受信
      */
     public onDahai(kaze: Types.kaze_number, dahaiHai: number): boolean{
-        if(!this.responseCheck(kaze, "dahai")) return false
+        if(!this.responseCheck(kaze, "dahai", dahaiHai)) return false
 
         this.event = "dahai"
         this.resetRes()
@@ -467,8 +469,8 @@ export class Game4 implements Game {
      * @param dahaiHai 牌ID
      * @returns // {[key in Types.kaze_number]: string[]}
      */
-    private dahaiCheck(kaze: Types.kaze_number, dahaiHai: number): {[key in Types.kaze_number]: {[key: string]: number[]}}{
-        let result: {[key in Types.kaze_number]: {[key: string]: number[]}} = {0: {}, 1: {}, 2: {}, 3: {}}
+    private dahaiCheck(kaze: Types.kaze_number, dahaiHai: number): {[key in Types.kaze_number]: Types.wait_res}{
+        let result: {[key in Types.kaze_number]: Types.wait_res} = {0: {}, 1: {}, 2: {}, 3: {}}
         let bakaze: Types.kaze_number
             if(this.info["bakaze"] === 0) bakaze = 0
             else if(this.info["bakaze"] === 1) bakaze = 1
@@ -511,20 +513,20 @@ export class Game4 implements Game {
             }
 
             const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], dahaiHai, ronhai, param)
-            let pre_result: {[key: string]: number[]} = {}
+            let pre_result: Types.wait_res = {}
             if(hora.yakuhai.length !== 0){
-                pre_result["hora"] = [dahaiHai]
+                pre_result["hora"] = {"hai": [dahaiHai], "data": []}
             }
 
             const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
             if(furo["chi"].length !== 0){
-                pre_result["chi"] = [dahaiHai]
+                pre_result["chi"] = {"hai": [dahaiHai], "data": []}
             }
             if(furo["pon"].length !== 0){
-                pre_result["pon"] = [dahaiHai]
+                pre_result["pon"] = {"hai": [dahaiHai], "data": []}
             }
             if(furo["kan"].length !== 0){
-                pre_result["daiminkan"] = [dahaiHai]
+                pre_result["daiminkan"] = {"hai": [dahaiHai], "data": []}
             }
             
             result[k] = pre_result
@@ -538,13 +540,13 @@ export class Game4 implements Game {
      * @param furoHai 牌ID[]
      * クライアントからの受信
      */
-    public onPon(kaze: Types.kaze_number, furoHai: number[]): boolean{
-        if(!this.responseCheck(kaze, "pon")) return false
+    public onPon(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
+        if(!this.responseCheck(kaze, "pon", furoHai, combi)) return false
 
         this.event = "furo"
         this.resetRes()
         //ここにチェック？
-        this.furo[kaze].push(furoHai)
+        //this.furo[kaze].push(furoHai)
         //副露に使用した牌を抜く
         const num: Types.kaze_number[] = [0,1,2,3]
 
@@ -564,7 +566,7 @@ export class Game4 implements Game {
      * 碰チェック
      * @returns string[]
      */
-    private ponCheck(kaze: Types.kaze_number, furoHai: number[]): string[]{
+    private ponCheck(kaze: Types.kaze_number, furoHai: number): string[]{
         return ["dahai"]
     }
 
@@ -574,13 +576,13 @@ export class Game4 implements Game {
      * @param furoHai 牌ID[]
      * クライアントからの受信
      */
-     public onChi(kaze: Types.kaze_number, furoHai: number[]): boolean{
-        if(!this.responseCheck(kaze, "chi")) return false
+     public onChi(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
+        if(!this.responseCheck(kaze, "chi", furoHai, combi)) return false
 
         this.event = "furo"
         this.resetRes()
         //ここにチェック？
-        this.furo[kaze].push(furoHai)
+        //this.furo[kaze].push(furoHai)
         //副露に使用した牌を抜く
         const num: Types.kaze_number[] = [0,1,2,3]
 
@@ -600,7 +602,7 @@ export class Game4 implements Game {
      * 吃チェック
      * @returns string[]
      */
-    private chiCheck(kaze: Types.kaze_number, furoHai: number[]): string[]{
+    private chiCheck(kaze: Types.kaze_number, furoHai: number): string[]{
         return ["dahai"]
     }
 
@@ -610,13 +612,13 @@ export class Game4 implements Game {
      * @param kanHai 牌ID[]
      * クライアントから受信
      */
-    public onKan(kaze: Types.kaze_number, kanHai: number[]): boolean{
-        if(!this.responseCheck(kaze, "kan")) return false
+    public onKan(kaze: Types.kaze_number, kanHai: number): boolean{
+        if(!this.responseCheck(kaze, "kan", kanHai)) return false
 
         this.event = "kan"
         this.resetRes()
         //ここにチェック？
-        this.furo[kaze].push(kanHai)
+        //this.furo[kaze].push(kanHai)
         //副露に使用した牌を抜く
         const num: Types.kaze_number[] = [0,1,2,3]
 
@@ -641,14 +643,14 @@ export class Game4 implements Game {
      * @param kanHai 槓ID[]
      * @returns // {[key in Types.kaze_number]: string[]}
      */
-    private kanCheck(kaze: Types.kaze_number, kanHai: number[]): {[key in Types.kaze_number]: {[key: string]: number[]}}{
-        let result: {[key in Types.kaze_number]: {[key: string]: number[]}} = {0: {}, 1: {}, 2: {}, 3: {}}
+    private kanCheck(kaze: Types.kaze_number, kanHai: number): {[key in Types.kaze_number]: Types.wait_res}{
+        let result: {[key in Types.kaze_number]: Types.wait_res} = {0: {}, 1: {}, 2: {}, 3: {}}
         return result
     }
 
     //
-    public onAnkan(kaze: Types.kaze_number, kanHai: number[]): boolean{
-        if(!this.responseCheck(kaze, "ankan")) return false
+    public onAnkan(kaze: Types.kaze_number, kanHai: number): boolean{
+        if(!this.responseCheck(kaze, "ankan", kanHai)) return false
         this.updateJunhai()
 
         return true;
@@ -656,8 +658,8 @@ export class Game4 implements Game {
     private ankanCheck(){}
 
     //
-    public onKakan(kaze: Types.kaze_number, kanHai: number[]): boolean{
-        if(!this.responseCheck(kaze, "kakan")) return false
+    public onKakan(kaze: Types.kaze_number, kanHai: number): boolean{
+        if(!this.responseCheck(kaze, "kakan", kanHai)) return false
         this.updateJunhai()
 
         return true;
@@ -692,21 +694,21 @@ export class Game4 implements Game {
      * @param tsumoHai 牌ID
      * @returns string[]
      */
-    private kantsumoCheck(kaze: Types.kaze_number, tsumoHai: number): {[key: string]: number[]}{
-        let result: {[key: string]: number[]} = {"dahai": [tsumoHai]}
+    private kantsumoCheck(kaze: Types.kaze_number, tsumoHai: number): Types.wait_res{
+        let result: Types.wait_res = {"dahai": {"hai": [tsumoHai], "data": []}}
         return result
     }
 
     //
     public onHora(kaze: Types.kaze_number, horaHai: number): boolean{
-        if(!this.responseCheck(kaze, "hora")) return false
+        if(!this.responseCheck(kaze, "hora", horaHai)) return false
         return true;
     }
     private horaCheck(){}
 
     //
     public onRichi(kaze: Types.kaze_number, richiHai: number): boolean{
-        if(!this.responseCheck(kaze, "richi")) return false
+        if(!this.responseCheck(kaze, "richi", richiHai)) return false
         this.updateJunhai()
 
         return true;
@@ -748,12 +750,21 @@ export class Game4 implements Game {
     public onShukyoku(){}
     private shukyokuCheck(){}
 
-    private responseCheck(kaze: Types.kaze_number, protocol: string): boolean{
+    private responseCheck(kaze: Types.kaze_number, protocol: string, hai: number, combi: number[] = []): boolean{
         if(this.jika[kaze] in this.waitRes){
             const response = this.waitRes[this.jika[kaze]]
             if("protocol" in response){
                 if(!(protocol in response["protocol"])){
                     return false
+                }
+                if(!(response["protocol"][protocol]["hai"].includes(hai))){
+                    return false
+                }else{
+                    if(combi.length){
+                        if(!(response["protocol"][protocol]["data"].includes(combi))){
+                            return false
+                        }
+                    }
                 }
             }else{
                 return false
@@ -783,9 +794,8 @@ export class Game4 implements Game {
         const num: Types.kaze_number[] = [0,1,2,3]
         for(let k of num){
             let new_junhai = {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}
-            const pre_tehai = this.tehai[k]["hai"]
             let tehai: number[] = []
-            tehai = tehai.concat(pre_tehai)
+            tehai = this.tehai[k]["hai"].slice()
             for(let hai of tehai){
                 const s = Math.floor(hai / 100) % 10
                 const n = Math.floor(hai / 10) % 10

@@ -38,11 +38,11 @@ export interface Game {
     getKaze(socketId: string): Types.kaze_number | null
     onTsumo(kaze: Types.kaze_number): void
     onDahai(kaze: Types.kaze_number, dahaiHai: number): boolean
-    onPon(kaze: Types.kaze_number, furoHai: number[]): boolean
-    onChi(kaze: Types.kaze_number, furoHai: number[]): boolean
-    onKan(kaze: Types.kaze_number, kanHai: number[]): boolean
-    onAnkan(kaze: Types.kaze_number, kanHai: number[]): boolean
-    onKakan(kaze: Types.kaze_number, kanHai: number[]): boolean
+    onPon(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean
+    onChi(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean
+    onKan(kaze: Types.kaze_number, kanHai: number): boolean
+    onAnkan(kaze: Types.kaze_number, kanHai: number): boolean
+    onKakan(kaze: Types.kaze_number, kanHai: number): boolean
     onKantsumo(kaze: Types.kaze_number): void
     onHora(kaze: Types.kaze_number, horaHai: number): boolean
     onRichi(kaze: Types.kaze_number, richiHai: number): boolean

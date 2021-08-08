@@ -22,11 +22,11 @@
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
-/*
+
 import * as janho from "../../Server"
 import {JanhoProtocol} from "../JanhoProtocol"
 
-export class Furo implements JanhoProtocol {
+export class Chi implements JanhoProtocol {
     private readonly server: janho.Server
     
     constructor(server: janho.Server){
@@ -35,10 +35,10 @@ export class Furo implements JanhoProtocol {
 
     public procReceive(socketId: string, data: string): void{
         const parsed = JSON.parse(data)
-        if("hai" in parsed){
-            if(Array.isArray(parsed["hai"])){
-                if(parsed["hai"].length !== 3) return
-                for(let hai of parsed["hai"]){
+        if("hai" in parsed && "combi" in parsed){
+            if(typeof parsed["hai"] === "number" && Array.isArray(parsed["combi"])){
+                if(parsed["combi"].length !== 3) return
+                for(let hai of parsed["combi"]){
                     if(typeof hai !== "number") return
                 }
                 const roomId = this.server.getPlayerRoomId(socketId)
@@ -47,9 +47,9 @@ export class Furo implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onFuro(kaze, parsed["hai"])
-                        if(result) this.procEmit(socketId, {"protocol": "furo", "result": true})
-                        else this.procEmit(socketId, {"protocol": "furo", "result": false})
+                        const result = room.onChi(kaze, parsed["hai"], parsed["combi"])
+                        if(result) this.procEmit(socketId, {"protocol": "chi", "result": true})
+                        else this.procEmit(socketId, {"protocol": "chi", "result": false})
                     }
                 }
             }
@@ -60,4 +60,4 @@ export class Furo implements JanhoProtocol {
         const data = JSON.stringify(json)
         this.server.emitData(socketId, data)
     }
-}*/
+}

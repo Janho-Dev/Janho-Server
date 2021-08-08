@@ -39,15 +39,18 @@ import {Kaikyoku} from "./game/Kaikyoku"
 import {Haipai} from "./game/Haipai"
 import {Tsumo} from "./game/Tsumo"
 import {Dahai} from "./game/Dahai"
-//import {Furo} from "./game/Furo"
 import {Hora} from "./game/Hora"
-//import {Kaikan} from "./game/Kaikan"
 import {Kan} from "./game/Kan"
 import {Kantsumo} from "./game/Kantsumo"
 import {Ryukyoku} from "./game/Ryukyoku"
 import {Shukyoku} from "./game/Shukyoku"
 import {Skip} from "./game/Skip"
 import {Candidate} from "./game/Candidate"
+import {Chi} from "./game/Chi"
+import {Pon} from "./game/Pon"
+import {Ankan} from "./game/Ankan"
+import {Kakan} from "./game/Kakan"
+
 
 export class Protocol {
     private readonly server: janho.Server
@@ -70,15 +73,17 @@ export class Protocol {
             "haipai": new Haipai(this.server),
             "tsumo": new Tsumo(this.server),
             "dahai": new Dahai(this.server),
-            //"furo": new Furo(this.server),
             "hora": new Hora(this.server),
-            //"kaikan": new Kaikan(this.server),
             "kan": new Kan(this.server),
             "kantsumo": new Kantsumo(this.server),
             "ryukyoku": new Ryukyoku(this.server),
             "shukyoku": new Shukyoku(this.server),
             "skip": new Skip(this.server),
-            "candidate": new Candidate(this.server)
+            "candidate": new Candidate(this.server),
+            "chi": new Chi(this.server),
+            "pon": new Pon(this.server),
+            "ankan": new Ankan(this.server),
+            "kakan": new Kakan(this.server)
         }
     }
 

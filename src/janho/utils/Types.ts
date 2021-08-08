@@ -72,3 +72,5 @@ export type ryukyoku = "荒牌平局" | "九種九牌" | "四家立直" | "三�
 
 export type candidated = {[key in "chi" | "pon" | "kan" | "kakan"]: number[][]}
 export type pre_candidate = {"junhai": {[key in junhai_type]: number[]}, "furo": number[][], "hai": number}
+
+export type wait_res = {[key: string]: {"hai": number[], "data": number[][]}}
