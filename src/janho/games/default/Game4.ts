@@ -398,17 +398,17 @@ export class Game4 implements Game {
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
         const tehai = this.tehai[kaze]["hai"].slice()
         tehai.push(tsumoHai)
-        let result: Types.wait_res = {"dahai": {"hai": tehai, "data": []}}
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": []}}
         if(hora.yakuhai.length !== 0){
-            result["hora"] = {"hai": [tsumoHai], "data": []}
+            result["hora"] = {"hai": [tsumoHai], "combi": []}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "data": furo["kan"]}
+            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"]}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "data": furo["kakan"]}
+            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"]}
         }
 
         return result
@@ -516,18 +516,18 @@ export class Game4 implements Game {
             const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], dahaiHai, ronhai, param)
             let pre_result: Types.wait_res = {}
             if(hora.yakuhai.length !== 0){
-                pre_result["hora"] = {"hai": [dahaiHai], "data": []}
+                pre_result["hora"] = {"hai": [dahaiHai], "combi": []}
             }
 
             const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
             if(furo["chi"].length !== 0){
-                pre_result["chi"] = {"hai": [dahaiHai], "data": furo["chi"]}
+                pre_result["chi"] = {"hai": [dahaiHai], "combi": furo["chi"]}
             }
             if(furo["pon"].length !== 0){
-                pre_result["pon"] = {"hai": [dahaiHai], "data": furo["pon"]}
+                pre_result["pon"] = {"hai": [dahaiHai], "combi": furo["pon"]}
             }
             if(furo["kan"].length !== 0){
-                pre_result["daiminkan"] = {"hai": [dahaiHai], "data": furo["kan"]}
+                pre_result["daiminkan"] = {"hai": [dahaiHai], "combi": furo["kan"]}
             }
             
             result[k] = pre_result
@@ -583,15 +583,15 @@ export class Game4 implements Game {
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": []}}}
 
         for(let k of num){
             if(k === kaze){
                 const hai = this.tehai[k].hai[this.tehai[k].hai.length - 1]
-                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": hai, "data": []}}})
+                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": hai, "combi": []}}})
                 this.setTimer(this.jika[k], {"protocol": "dahai", "hai": hai})
             }else if(this.players[this.jika[k]] === "game"){
-                this.server.getProtocol().emit("pon", this.jika[k], {"protocol": "pon", "kaze": kaze, "hai": furoHai, "data": new_combi})
+                this.server.getProtocol().emit("pon", this.jika[k], {"protocol": "pon", "kaze": kaze, "hai": furoHai, "combi": new_combi})
             }
         }
 
@@ -638,15 +638,15 @@ export class Game4 implements Game {
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": []}}}
 
         for(let k of num){
             if(k === kaze){
                 const hai = this.tehai[k].hai[this.tehai[k].hai.length - 1]
-                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}})
+                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": this.tehai[kaze].hai, "combi": []}}})
                 this.setTimer(this.jika[k], {"protocol": "dahai", "hai": hai})
             }else if(this.players[this.jika[k]] === "game"){
-                this.server.getProtocol().emit("chi", this.jika[k], {"protocol": "chi", "kaze": kaze, "hai": furoHai, "data": new_combi})
+                this.server.getProtocol().emit("chi", this.jika[k], {"protocol": "chi", "kaze": kaze, "hai": furoHai, "combi": new_combi})
             }
         }
 
@@ -707,7 +707,7 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
-                this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "kaze": kaze, "hai": kanHai, "data": new_combi})
+                this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "kaze": kaze, "hai": kanHai, "combi": new_combi})
             }
         }
 
@@ -737,7 +737,7 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
-                this.server.getProtocol().emit("ankan", this.jika[k], {"protocol": "ankan", "kaze": kaze, "hai": kanHai, "data": combi})
+                this.server.getProtocol().emit("ankan", this.jika[k], {"protocol": "ankan", "kaze": kaze, "hai": kanHai, "combi": combi})
             }
         }
 
@@ -763,7 +763,7 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
-                this.server.getProtocol().emit("kakan", this.jika[k], {"protocol": "kakan", "kaze": kaze, "hai": kanHai, "data": combi})
+                this.server.getProtocol().emit("kakan", this.jika[k], {"protocol": "kakan", "kaze": kaze, "hai": kanHai, "combi": combi})
             }
         }
 
@@ -802,7 +802,7 @@ export class Game4 implements Game {
      * @returns string[]
      */
     private kantsumoCheck(kaze: Types.kaze_number, tsumoHai: number): Types.wait_res{
-        let result: Types.wait_res = {"dahai": {"hai": [tsumoHai], "data": []}}
+        let result: Types.wait_res = {"dahai": {"hai": [tsumoHai], "combi": []}}
         return result
     }
 
@@ -862,7 +862,7 @@ export class Game4 implements Game {
                     return false
                 }else{
                     if(combi.length){
-                        if(!(response["protocol"][protocol]["data"].some(n => 
+                        if(!(response["protocol"][protocol]["combi"].some(n => 
                             (n.length === combi.length) && combi.every(i => n.includes(i))
                         ))){
                             return false

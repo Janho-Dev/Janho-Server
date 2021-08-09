@@ -74,7 +74,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_win-x64",
-            resources: ["./build/tsc/resource/**/*"],
+            resources: ["./build/janho/resource/**/*"],
             asset: assets.windows,
 			temp: "../node/.nexe",
             flags: ["--experimental-modules"],
@@ -104,7 +104,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_linux-x64",
-            resources: ["./build/tsc/resource/**/*"],
+            resources: ["./build/janho/resource/**/*"],
             asset: assets.linux,
 			temp: "../node/.nexe",
             flags: ["--experimental-modules"],
@@ -116,7 +116,7 @@ async function exists(filename) {
         await nexe.compile({
             input: './build/janho/Janho.js',
             output: "./build/JanhoServer_" + __version + "_mac-x64",
-            resources: ["./build/tsc/resource/**/*"],
+            resources: ["./build/janho/resource/**/*"],
             asset: assets.mac,
 			temp: "../node/.nexe",
             flags: ["--experimental-modules"],
