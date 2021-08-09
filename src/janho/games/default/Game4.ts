@@ -30,6 +30,7 @@ import {Hora} from "../../utils/Hora"
 import {Shipai} from "../../utils/Shipai"
 import {Logger} from "../../Logger"
 import {Candidate} from "../../utils/Candidate"
+import { textChangeRangeIsUnchanged } from "typescript"
 
 export class Game4 implements Game {
     private readonly server: janho.Server
@@ -404,10 +405,10 @@ export class Game4 implements Game {
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "data": []}
+            result["ankan"] = {"hai": [tsumoHai], "data": furo["kan"]}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "data": []}
+            result["kakan"] = {"hai": [tsumoHai], "data": furo["kakan"]}
         }
 
         return result
@@ -520,13 +521,13 @@ export class Game4 implements Game {
 
             const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
             if(furo["chi"].length !== 0){
-                pre_result["chi"] = {"hai": [dahaiHai], "data": []}
+                pre_result["chi"] = {"hai": [dahaiHai], "data": furo["chi"]}
             }
             if(furo["pon"].length !== 0){
-                pre_result["pon"] = {"hai": [dahaiHai], "data": []}
+                pre_result["pon"] = {"hai": [dahaiHai], "data": furo["pon"]}
             }
             if(furo["kan"].length !== 0){
-                pre_result["daiminkan"] = {"hai": [dahaiHai], "data": []}
+                pre_result["daiminkan"] = {"hai": [dahaiHai], "data": furo["kan"]}
             }
             
             result[k] = pre_result
@@ -541,33 +542,60 @@ export class Game4 implements Game {
      * クライアントからの受信
      */
     public onPon(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
+        //待機処理
         if(!this.responseCheck(kaze, "pon", furoHai, combi)) return false
 
-        this.event = "furo"
+        this.event = "pon"
         this.resetRes()
-        //ここにチェック？
-        //this.furo[kaze].push(furoHai)
-        //副露に使用した牌を抜く
+
+        let new_combi = combi.slice()
+        new_combi.splice(combi.indexOf(furoHai), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[0]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[1]), 1)
+        this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
+        let i = 0
+        switch(kaze){
+            case 0:
+                if(this.kaze === 1) i = 1
+                else if(this.kaze === 2) i = 2
+                else if(this.kaze === 3) i = 3
+                break
+            case 1:
+                if(this.kaze === 2) i = 1
+                else if(this.kaze === 3) i = 2
+                else if(this.kaze === 0) i = 3
+                break
+            case 2:
+                if(this.kaze === 3) i = 1
+                else if(this.kaze === 0) i = 2
+                else if(this.kaze === 1) i = 3
+                break
+            case 3:
+                if(this.kaze === 0) i = 1
+                else if(this.kaze === 1) i = 2
+                else if(this.kaze === 2) i = 3
+                break
+        }
+        new_combi.push(furoHai + i)
+        this.furo[kaze].push(this.haiSort(new_combi))
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
+        this.kaze = kaze
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}}
 
-        const check = this.ponCheck(kaze, furoHai)
         for(let k of num){
-            if(k === kaze) continue
-            if(this.players[this.jika[k]] === "game"){
-                this.server.getProtocol().emit("pon", this.jika[k], {"protocol": "pon", "kaze": kaze, "hai": furoHai})
+            if(k === kaze){
+                const hai = this.tehai[k].hai[this.tehai[k].hai.length - 1]
+                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": hai, "data": []}}})
+                this.setTimer(this.jika[k], {"protocol": "dahai", "hai": hai})
+            }else if(this.players[this.jika[k]] === "game"){
+                this.server.getProtocol().emit("pon", this.jika[k], {"protocol": "pon", "kaze": kaze, "hai": furoHai, "data": new_combi})
             }
         }
 
-        return true//
-    }
-    /**
-     * 碰チェック
-     * @returns string[]
-     */
-    private ponCheck(kaze: Types.kaze_number, furoHai: number): string[]{
-        return ["dahai"]
+        return true
     }
 
     /**
@@ -577,33 +605,52 @@ export class Game4 implements Game {
      * クライアントからの受信
      */
      public onChi(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
+        //待機処理
         if(!this.responseCheck(kaze, "chi", furoHai, combi)) return false
 
-        this.event = "furo"
+        this.event = "chi"
         this.resetRes()
-        //ここにチェック？
-        //this.furo[kaze].push(furoHai)
-        //副露に使用した牌を抜く
+
+        let new_combi = combi.slice()
+        new_combi.splice(combi.indexOf(furoHai), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[0]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[1]), 1)
+        this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
+        let i = 0
+        switch(kaze){
+            case 0:
+                i = 3
+                break
+            case 1:
+                i = 0
+                break
+            case 2:
+                i = 1
+                break
+            case 3:
+                i = 2
+                break
+        }
+        new_combi.push(furoHai + i)
+        this.furo[kaze].push(this.haiSort(new_combi))
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
+        this.kaze = kaze
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}}
 
-        const check = this.chiCheck(kaze, furoHai)
         for(let k of num){
-            if(k === kaze) continue
-            if(this.players[this.jika[k]] === "game"){
-                this.server.getProtocol().emit("chi", this.jika[k], {"protocol": "chi", "kaze": kaze, "hai": furoHai})
+            if(k === kaze){
+                const hai = this.tehai[k].hai[this.tehai[k].hai.length - 1]
+                this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": {"dahai": {"hai": this.tehai[kaze].hai, "data": []}}})
+                this.setTimer(this.jika[k], {"protocol": "dahai", "hai": hai})
+            }else if(this.players[this.jika[k]] === "game"){
+                this.server.getProtocol().emit("chi", this.jika[k], {"protocol": "chi", "kaze": kaze, "hai": furoHai, "data": new_combi})
             }
         }
 
-        return true//
-    }
-    /**
-     * 吃チェック
-     * @returns string[]
-     */
-    private chiCheck(kaze: Types.kaze_number, furoHai: number): string[]{
-        return ["dahai"]
+        return true
     }
 
     /**
@@ -612,59 +659,119 @@ export class Game4 implements Game {
      * @param kanHai 牌ID[]
      * クライアントから受信
      */
-    public onKan(kaze: Types.kaze_number, kanHai: number): boolean{
+    public onKan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
+        //待機処理
         if(!this.responseCheck(kaze, "kan", kanHai)) return false
 
         this.event = "kan"
         this.resetRes()
-        //ここにチェック？
-        //this.furo[kaze].push(kanHai)
-        //副露に使用した牌を抜く
+
+        let new_combi = combi.slice()
+        new_combi.splice(combi.indexOf(kanHai), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[0]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[1]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[2]), 1)
+        this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
+        let i = 0
+        switch(kaze){
+            case 0:
+                if(this.kaze === 1) i = 1
+                else if(this.kaze === 2) i = 2
+                else if(this.kaze === 3) i = 3
+                break
+            case 1:
+                if(this.kaze === 2) i = 1
+                else if(this.kaze === 3) i = 2
+                else if(this.kaze === 0) i = 3
+                break
+            case 2:
+                if(this.kaze === 3) i = 1
+                else if(this.kaze === 0) i = 2
+                else if(this.kaze === 1) i = 3
+                break
+            case 3:
+                if(this.kaze === 0) i = 1
+                else if(this.kaze === 1) i = 2
+                else if(this.kaze === 2) i = 3
+                break
+        }
+        new_combi.push(kanHai + i)
+        this.furo[kaze].push(this.haiSort(new_combi))
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
+        this.kaze = kaze
 
-        const check = this.kanCheck(kaze, kanHai)
         for(let k of num){
-            if(k === kaze) continue
-            if(this.players[this.jika[kaze]] === "game"){
-                this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "kaze": kaze, "hai": kanHai})
-                if(Object.keys(check[k]).length === 0) continue
-                this.waitRes[this.jika[k]] = {"protocol": check[k]}
-                this.setTimer(this.jika[k], {"protocol": "skip"})//skip??
+            if(k === kaze){
+                this.onKantsumo(k)
+            }else if(this.players[this.jika[kaze]] === "game"){
+                this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "kaze": kaze, "hai": kanHai, "data": new_combi})
             }
         }
 
         return true
     }
-    /**
-     * 大明槓チェック
-     * @param kaze 0 | 1 | 2 | 3 
-     * @param kanHai 槓ID[]
-     * @returns // {[key in Types.kaze_number]: string[]}
-     */
-    private kanCheck(kaze: Types.kaze_number, kanHai: number): {[key in Types.kaze_number]: Types.wait_res}{
-        let result: {[key in Types.kaze_number]: Types.wait_res} = {0: {}, 1: {}, 2: {}, 3: {}}
-        return result
-    }
 
-    //
-    public onAnkan(kaze: Types.kaze_number, kanHai: number): boolean{
+    public onAnkan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
+        //待機処理
         if(!this.responseCheck(kaze, "ankan", kanHai)) return false
+
+        this.event = "ankan"
+        this.resetRes()
+
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(combi[0]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(combi[1]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(combi[2]), 1)
+        this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(combi[3]), 1)
+        this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
+        this.furo[kaze].push(this.haiSort(combi))
+
+        const num: Types.kaze_number[] = [0,1,2,3]
+
         this.updateJunhai()
+        this.kaze = kaze
 
-        return true;
+        for(let k of num){
+            if(k === kaze){
+                this.onKantsumo(k)
+            }else if(this.players[this.jika[kaze]] === "game"){
+                this.server.getProtocol().emit("ankan", this.jika[k], {"protocol": "ankan", "kaze": kaze, "hai": kanHai, "data": combi})
+            }
+        }
+
+        return true
     }
-    private ankanCheck(){}
 
-    //
-    public onKakan(kaze: Types.kaze_number, kanHai: number): boolean{
+    public onKakan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
         if(!this.responseCheck(kaze, "kakan", kanHai)) return false
-        this.updateJunhai()
 
-        return true;
+        this.event = "kakan"
+        this.resetRes()
+
+        const index = this.furo[kaze].indexOf(combi.splice(kanHai, 1))
+        this.tehai[kaze].hai.splice(kanHai, 1)
+        this.furo[kaze][index].push(kanHai)
+
+        const num: Types.kaze_number[] = [0,1,2,3]
+
+        this.updateJunhai()
+        this.kaze = kaze
+
+        for(let k of num){
+            if(k === kaze){
+                this.onKantsumo(k)
+            }else if(this.players[this.jika[kaze]] === "game"){
+                this.server.getProtocol().emit("kakan", this.jika[k], {"protocol": "kakan", "kaze": kaze, "hai": kanHai, "data": combi})
+            }
+        }
+
+        return true
     }
-    private kakanCheck(){}
+    private kakanCheck(){
+        //TODO
+    }
 
     /**
      * 槓自摸処理
@@ -704,7 +811,6 @@ export class Game4 implements Game {
         if(!this.responseCheck(kaze, "hora", horaHai)) return false
         return true;
     }
-    private horaCheck(){}
 
     //
     public onRichi(kaze: Types.kaze_number, richiHai: number): boolean{
@@ -713,19 +819,16 @@ export class Game4 implements Game {
 
         return true;
     }
-    private richiCheck(){}
 
     //
     public onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku = "九種九牌"): boolean{
         return true;
     }
-    private ryukyokuByPlayerCheck(){}
 
     //
     public onRyukyoku(type: Types.ryukyoku): void{
         return;
     }
-    private ryukyokuCheck(){}
 
     public onSkip(kaze: Types.kaze_number): boolean{
         const socketId = this.jika[kaze]
@@ -745,10 +848,8 @@ export class Game4 implements Game {
     }
 
     public onEnd(){}
-    private endCheck(){}
 
     public onShukyoku(){}
-    private shukyokuCheck(){}
 
     private responseCheck(kaze: Types.kaze_number, protocol: string, hai: number, combi: number[] = []): boolean{
         if(this.jika[kaze] in this.waitRes){
@@ -761,7 +862,9 @@ export class Game4 implements Game {
                     return false
                 }else{
                     if(combi.length){
-                        if(!(response["protocol"][protocol]["data"].includes(combi))){
+                        if(!(response["protocol"][protocol]["data"].some(n => 
+                            (n.length === combi.length) && combi.every(i => n.includes(i))
+                        ))){
                             return false
                         }
                     }

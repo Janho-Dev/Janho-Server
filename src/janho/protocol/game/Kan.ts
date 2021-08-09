@@ -36,14 +36,18 @@ export class Kan implements JanhoProtocol {
     public procReceive(socketId: string, data: string): void{
         const parsed = JSON.parse(data)
         if("hai" in parsed){
-            if(typeof parsed["hai"] === "number"){
+            if(typeof parsed["hai"] === "number" && Array.isArray(parsed["combi"])){
+                if(parsed["combi"].length !== 4) return
+                for(let hai of parsed["combi"]){
+                    if(typeof hai !== "number") return
+                }
                 const roomId = this.server.getPlayerRoomId(socketId)
                 if(roomId !== null){
                     const room = this.server.getRoom(roomId)
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onKan(kaze, parsed["hai"])
+                        const result = room.onKan(kaze, parsed["hai"], parsed["combi"])
                         if(result) this.procEmit(socketId, {"protocol": "kan", "result": true})
                         else this.procEmit(socketId, {"protocol": "kan", "result": false})
                     }
