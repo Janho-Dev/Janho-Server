@@ -27,7 +27,12 @@ import {Event} from "../Event";
 import {EventBase} from "../EventBase";
 
 export abstract class UserEvent extends EventBase{
-    constructor(event: Event){
+    protected readonly socketId: string
+    protected readonly name: string
+
+    constructor(event: Event, socketId: string, name: string){
         super(event)
+        this.socketId = socketId
+        this.name = name
     }
 }

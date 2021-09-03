@@ -33,6 +33,13 @@ import {CommandReader} from "./command/CommandReader"
 import {Status} from "./Status"
 import {PluginManager} from "./plugin/PluginManager"
 import {Event} from "./event/Event"
+import {UserAddEvent} from "./event/user/UserAddEvent"
+import {UserDeleteEvent} from "./event/user/UserDeleteEvent"
+import {UserDeadEvent} from "./event/user/UserDeadEvent"
+import {ServerEmitEvent} from "./event/server/ServerEmitEvent"
+import {ServerReceiveEvent} from "./event/server/ServerReceiveEvent"
+import {RoomAddEvent} from "./event/server/RoomAddEvent"
+import {RoomDeleteEvent} from "./event/server/RoomDeleteEvent"
 
 export class Server {
 	private readonly io: socketio.Server
@@ -67,7 +74,7 @@ export class Server {
 	public addUser(socketId: string, name: string): boolean{
 		if(!(socketId in this.users)){
 			this.users[socketId] = name
-			
+			new UserAddEvent(this.getEvent(), socketId, name).emit()
 			return true
 		}else
 			return false
@@ -77,8 +84,11 @@ export class Server {
 	 * @param socketId セッションID
 	 */
 	public deleteUser(socketId: string): void{
-		if(socketId in this.users)
+		if(socketId in this.users){
+			let name = this.users[socketId]
 			delete this.users[socketId]
+			new UserDeleteEvent(this.getEvent(), socketId, name).emit()
+		}
 	}
 	/**
 	 * 利用ユーザの確認
@@ -118,6 +128,7 @@ export class Server {
 	public addPlayer(socketId: string, roomId: string): void{
 		if(!(socketId in this.players))
 			this.players[socketId] = roomId
+			//game addplayer event
 	}
 	/**
 	 * プレイヤーの削除
@@ -126,6 +137,7 @@ export class Server {
 	public deletePlayer(socketId: string): void{
 		if(socketId in this.players)
 			delete this.players[socketId]
+			//game deleteplayer event
 	}
 	/**
 	 * プレイヤーの確認
@@ -168,6 +180,7 @@ export class Server {
 			//現在は4麻のみ
 			this.rooms[roomId] = new Game4(this, roomId, hosterId)
 			this.getListener().register(this.rooms[roomId])
+			new RoomAddEvent(this.getEvent(), roomId, hosterId).emit()
 			return true
 		}else
 			return false
@@ -177,8 +190,10 @@ export class Server {
 	 * @param roomId 部屋ID
 	 */
 	public deleteRoom(roomId: string): void{
-		if(roomId in this.rooms)
+		if(roomId in this.rooms){
 			delete this.rooms[roomId]
+			new RoomDeleteEvent(this.getEvent(), roomId).emit()
+		}
 	}
 	/**
 	 * 部屋確認
@@ -215,6 +230,8 @@ export class Server {
 	 * @param socketId セッションID
 	 */
 	public dead(socketId: string): void{
+		let name = this.users[socketId]
+		new UserDeadEvent(this.getEvent(), socketId, name).emit()
 		const roomId = this.getPlayerRoomId(socketId)
 		if(roomId !== null){
 			const room = this.getRoom(roomId)
@@ -230,6 +247,7 @@ export class Server {
 	public emitData(socketId: string, data: string): void{
 		new Promise((resolve, reject) => {
             setTimeout(() => {
+				new ServerEmitEvent(this.getEvent(), socketId, data).emit()
                 this.io.to(socketId).emit("janho", data)
 				this.logger.log("debug", "EMIT " + socketId)
 				this.logger.log("debug", data)
@@ -239,6 +257,7 @@ export class Server {
         })
 	}
 	public onReceive(socketId: string, data: string): void{
+		new ServerReceiveEvent(this.getEvent(), socketId, data).emit()
 		this.network.receive(socketId, data)
 		this.logger.log("debug", "REC " + socketId)
 		this.logger.log("debug", data)

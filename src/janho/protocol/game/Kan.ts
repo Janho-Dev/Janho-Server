@@ -48,8 +48,8 @@ export class Kan implements JanhoProtocol {
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
                         const result = room.onKan(kaze, parsed["hai"], parsed["combi"])
-                        if(result) this.procEmit(socketId, {"protocol": "kan", "result": true})
-                        else this.procEmit(socketId, {"protocol": "kan", "result": false})
+                        if(!result) this.procEmit(socketId, {"protocol": "kan", "result": false})
+                        //return true --> Game::onKan()
                     }
                 }
             }

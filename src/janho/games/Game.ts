@@ -30,6 +30,7 @@ export interface Game {
     ready(socketId: string, bool: boolean): boolean
     loaded(socketId: string): boolean
     start(): void
+    restart(): void
     quit(socketId: string): boolean
     dead(socketId: string): void
     setTimer(socketId: string, json: {}): void

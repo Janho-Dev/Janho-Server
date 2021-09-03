@@ -48,8 +48,8 @@ export class Kakan implements JanhoProtocol {
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
                         const result = room.onKakan(kaze, parsed["hai"], parsed["combi"])
-                        if(result) this.procEmit(socketId, {"protocol": "kakan", "result": true})
-                        else this.procEmit(socketId, {"protocol": "kakan", "result": false})
+                        if(!result) this.procEmit(socketId, {"protocol": "kakan", "result": false})
+                        //return true --> Game::onKakan()
                     }
                 }
             }

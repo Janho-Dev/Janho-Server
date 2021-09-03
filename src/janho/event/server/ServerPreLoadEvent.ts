@@ -17,16 +17,22 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-79"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 79
-    static readonly INTERNAL_VERSION = 0.79
+import {Event} from "../Event";
+import {ServerEvent} from "./ServerEvent";
+
+export class ServerPreLoadEvent extends ServerEvent{
+
+    constructor(event: Event){
+        super(event)
+    }
+
+    public emit(): boolean{
+        return this.event.serverPreLoad()
+    }
 }

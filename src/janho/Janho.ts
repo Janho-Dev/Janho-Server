@@ -37,6 +37,10 @@ import {Judge} from "./utils/Judge"
 import {VersionInfo} from "./VersionInfo"
 import {SocketConnectEvent} from "./event/socket/SocketConnectEvent"
 import {SocketDisconnectEvent} from "./event/socket/SocketDisconnectEvent"
+import {SocketReceiveEvent} from "./event/socket/SocketReceiveEvent"
+import {ServerStopEvent} from "./event/server/ServerStopEvent"
+import {ServerPreLoadEvent} from "./event/server/ServerPreLoadEvent"
+import {ServerLoadEvent} from "./event/server/ServerLoadEvent"
 
 const S_TIME = performance.now()
 
@@ -60,6 +64,7 @@ io.on("connection", (socket: socketio.Socket) => {
         server.dead(socket.id)
     })
     socket.on("janho", (data: string) => {
+        new SocketReceiveEvent(server.getEvent(), socket.id, data).emit()
         try{
             var parsed = JSON.parse(data);
         }catch(e){
@@ -79,6 +84,7 @@ io.on("connection", (socket: socketio.Socket) => {
 
 //プログラム停止時
 process.on("exit", (code: number) => {
+    new ServerStopEvent(server.getEvent()).emit()
     server.getPluginManager().unload()
     server.getLogger().log("info", "Server was stopped with exit code " + code + ".\n")
 })
@@ -112,6 +118,7 @@ process.on("uncaughtException", function(error) {
 })
 
 async function execute(){
+    new ServerPreLoadEvent(server.getEvent()).emit()
     server.getLogger().log("success", `Janho Server ${VersionInfo.VERSION}. -The online mahjong software-`)
     if(VersionInfo.IS_DEVELOPMENT_BUILD){
         server.getLogger().log("warning", "This build is a development version.")
@@ -120,8 +127,8 @@ async function execute(){
     server.getLogger().log("info", `This server is running Janho Client version 1.x.x`)
     server.getLogger().log("info", "Janho Server is distributed under the GNU Affero General Public License version 3.")
 
+    //pluginロード
     const loadPlugins = () => {
-        //pluginロード
         return new Promise<void>((resolve, reject) => {
             server.getLogger().log("info", "Preparing to load the plugin...")
             server.getPluginManager().load()
@@ -137,6 +144,7 @@ async function execute(){
         const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
         server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
     })
+    new ServerLoadEvent(server.getEvent()).emit()
 }
 
 execute()

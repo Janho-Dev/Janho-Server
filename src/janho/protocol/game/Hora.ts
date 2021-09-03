@@ -34,6 +34,22 @@ export class Hora implements JanhoProtocol {
     }
 
     public procReceive(socketId: string, data: string): void{
+        const parsed = JSON.parse(data)
+        if("hai" in parsed){
+            if(typeof parsed["hai"] === "number"){
+                const roomId = this.server.getPlayerRoomId(socketId)
+                if(roomId !== null){
+                    const room = this.server.getRoom(roomId)
+                    if(room !== null){
+                        const kaze = room.getKaze(socketId)
+                        if(kaze === null) return
+                        const result = room.onHora(kaze, parsed["hai"])
+                        if(!result) this.procEmit(socketId, {"protocol": "hora", "result": false})
+                        //return true --> Game::onHora()
+                    }
+                }
+            }
+        }
     }
 
     public procEmit(socketId: string, json: {}): void{
