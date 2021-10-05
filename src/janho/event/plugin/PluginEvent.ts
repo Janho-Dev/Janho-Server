@@ -30,4 +30,9 @@ export abstract class PluginEvent extends EventBase{
     constructor(event: Event){
         super(event)
     }
+
+    public emit(){
+        super.emit()
+        this.event.plugin()
+    }
 }

@@ -1,0 +1,8 @@
+{
+	"server": {
+		"port": 3000,
+		"enable-https": false,
+		"key": "",
+		"cert": ""
+	}
+}

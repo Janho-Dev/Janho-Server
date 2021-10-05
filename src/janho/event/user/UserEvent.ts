@@ -35,4 +35,9 @@ export abstract class UserEvent extends EventBase{
         this.socketId = socketId
         this.name = name
     }
+
+    public emit(){
+        super.emit()
+        this.event.user(this.socketId, this.name)
+    }
 }

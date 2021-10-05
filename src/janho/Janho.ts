@@ -32,6 +32,8 @@ import * as janho from "./Server"
 import fs from "fs"
 import util from "util"
 import path from "path"
+import {createServer} from "https"
+import {readFileSync} from "fs"
 import {performance} from "perf_hooks"
 import {Judge} from "./utils/Judge"
 import {VersionInfo} from "./VersionInfo"
@@ -43,53 +45,13 @@ import {ServerPreLoadEvent} from "./event/server/ServerPreLoadEvent"
 import {ServerLoadEvent} from "./event/server/ServerLoadEvent"
 
 const S_TIME = performance.now()
-
 const app: express.Express = express.default()
-const hoster: http.Server = http.createServer(app)
-const io: socketio.Server = new socketio.Server(hoster, {
-    allowEIO3: true,
-    cors: {
-        origin: ["file://", "http://localhost:7456"],
-        methods: ["GET", "POST"]
-    }
-})
-const server: janho.Server = new janho.Server(io)
-const port = 3000
+let hoster: http.Server
+let io: socketio.Server
+let server: janho.Server
+let port = 3000
 
-//コネクション処理
-io.on("connection", (socket: socketio.Socket) => {
-    new SocketConnectEvent(server.getEvent(), socket.id).emit()
-    socket.on("disconnect", () => {
-        new SocketDisconnectEvent(server.getEvent(), socket.id).emit()
-        server.dead(socket.id)
-    })
-    socket.on("janho", (data: string) => {
-        new SocketReceiveEvent(server.getEvent(), socket.id, data).emit()
-        try{
-            var parsed = JSON.parse(data);
-        }catch(e){
-            return
-        }
-        //データ構文確認
-        if(Judge.judgeArrOrHash(parsed) !== "hash") return
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                server.onReceive(socket.id, data)
-            }, 1);
-        }).catch(() => {
-            console.error("Error: socket.io receive error.")
-        })
-    })
-})
-
-//プログラム停止時
-process.on("exit", (code: number) => {
-    new ServerStopEvent(server.getEvent()).emit()
-    server.getPluginManager().unload()
-    server.getLogger().log("info", "Server was stopped with exit code " + code + ".\n")
-})
-
-//エラー発生時
+//例外発生時エラーログを出力
 process.on("uncaughtException", function(error) {
     console.error("Caught exception: " + error.message + "\n")
     console.error(error.stack + "\n")
@@ -117,7 +79,82 @@ process.on("uncaughtException", function(error) {
     })
 })
 
+async function initialize(https: boolean, key: string, cert: string): Promise<void>{
+    if(https){
+        hoster = createServer({
+            key: readFileSync(key),
+            cert: readFileSync(cert)
+        }, app)
+    }else{
+        hoster = http.createServer(app)
+    }
+    io = new socketio.Server(hoster, {
+        allowEIO3: true,
+        cors: {
+            origin: ["file://", "http://localhost:7456", "https://game.janhoyaba.com"],
+            methods: ["GET", "POST"]
+        }
+    })
+    server = new janho.Server(io)
+
+        //socket.io コネクション処理
+    io.on("connection", (socket: socketio.Socket) => {
+        new SocketConnectEvent(server.getEvent(), socket.id).emit()
+        socket.on("disconnect", () => {
+            new SocketDisconnectEvent(server.getEvent(), socket.id).emit()
+            server.dead(socket.id)
+        })
+        socket.on("janho", (data: string) => {
+            new SocketReceiveEvent(server.getEvent(), socket.id, data).emit()
+            try{
+                var parsed = JSON.parse(data);
+            }catch(e){
+                return
+            }
+            //データ構文確認
+            if(Judge.judgeArrOrHash(parsed) !== "hash") return
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    server.onReceive(socket.id, data)
+                }, 1);
+            }).catch(() => {
+                console.error("Error: socket.io receive error.")
+            })
+        })
+    })
+
+    //プログラム停止時
+    process.on("exit", (code: number) => {
+        new ServerStopEvent(server.getEvent()).emit()
+        server.getPluginManager().unload()
+        server.getLogger().log("info", "Server was stopped with exit code " + code + ".\n")
+    })
+}
+
+//メイン関数
 async function execute(){
+    //JSONファイルを読み込み
+    //TODO: JSON更新の処理
+    const data = {"server": {"port": 3000,"enable-https": false,"key": "","cert": ""}}
+    const pt = path.resolve(__dirname, "..", "..", "janho.json")
+    if(!fs.existsSync(pt)){
+        fs.writeFileSync(pt, JSON.stringify(data, null, "\t"))
+    }
+    const json = JSON.parse(fs.readFileSync(pt, 'utf8'))
+    let https = false
+    if("server" in json){
+        if("port" in json["server"]){
+            port = json["server"]["port"]
+        }
+        if("key" in json["server"] && "cert" in json["server"]){
+            if("enable-https" in json["server"]){
+                if(json["server"]["enable-https"]) https = true
+            }
+        }
+    }
+    await initialize(https, json["server"]["key"], json["server"]["cert"])
+
+    //バージョンを確認
     new ServerPreLoadEvent(server.getEvent()).emit()
     server.getLogger().log("success", `Janho Server ${VersionInfo.VERSION}. -The online mahjong software-`)
     if(VersionInfo.IS_DEVELOPMENT_BUILD){
@@ -127,7 +164,7 @@ async function execute(){
     server.getLogger().log("info", `This server is running Janho Client version 1.x.x`)
     server.getLogger().log("info", "Janho Server is distributed under the GNU Affero General Public License version 3.")
 
-    //pluginロード
+    //プラグインをロード
     const loadPlugins = () => {
         return new Promise<void>((resolve, reject) => {
             server.getLogger().log("info", "Preparing to load the plugin...")
@@ -137,13 +174,18 @@ async function execute(){
     }
     await loadPlugins()
 
-    //port番ポートで開く
-    hoster.listen(port, () => {
-        server.getLogger().log("info", `Server was started on *:${port}`)
-        const E_TIME = performance.now()
-        const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
-        server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
-    })
+    //設定したポート番号でサーバーを開く
+    try{
+        hoster.listen(port, () => {
+            server.getLogger().log("info", `Server was started on *:${port}`)
+            const E_TIME = performance.now()
+            const ELAPSED = (E_TIME - S_TIME).toPrecision(3)
+            server.getLogger().log("info", `Done (${ELAPSED}ms)! For help, type "help" or "?"`)
+        })
+    }catch(e){
+        console.error(e)
+        process.exit(1)
+    }
     new ServerLoadEvent(server.getEvent()).emit()
 }
 

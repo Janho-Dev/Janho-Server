@@ -50,6 +50,8 @@ import {Chi} from "./game/Chi"
 import {Pon} from "./game/Pon"
 import {Ankan} from "./game/Ankan"
 import {Kakan} from "./game/Kakan"
+import {ResetRoom} from "./room/ResetRoom"
+import { RoomUpdate } from "./room/RoomUpdate"
 
 
 export class Protocol {
@@ -68,6 +70,8 @@ export class Protocol {
             "readyRoom": new ReadyRoom(this.server),
             "quitRoom": new QuitRoom(this.server),
             "startRoom": new StartRoom(this.server),
+            "resetRoom": new ResetRoom(this.server),
+            "roomUpdate": new RoomUpdate(this.server),
 
             "kaikyoku": new Kaikyoku(this.server),
             "haipai": new Haipai(this.server),

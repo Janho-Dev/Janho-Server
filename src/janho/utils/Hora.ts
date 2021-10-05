@@ -97,9 +97,16 @@ export class Hora {
         }
     }
 
-    static hora(tehai: number[], _furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number | number[], ronhai: number | null, param: Types.hora_info){
-        let max :Types.point = {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: []}
+    static hora(_tehai: number[], __furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number, param: Types.hora_info){
+        let tehai = _tehai.slice()
+        
+        const h = Math.floor(ronhai / 1) % 10
+        let hora: "ron"|"tsumo" = "ron"
+        if(h === 0) hora = "tsumo"
+        let max :Types.point = {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: [], hora: hora}
 
+        let _furo: number[][] = []
+        _furo = JSON.parse(JSON.stringify(__furo))
         let furo: number[][] = []
         if(_furo !== undefined){
             furo = _furo.filter(n => n.length !== 0)
@@ -144,7 +151,7 @@ export class Hora {
         for(let mentsu of this.hora_mentsu(furo, junhai, tsumohai, ronhai)){
             let hudi = this.get_hudi(mentsu, param.bakaze, param.jikaze)
             let yakuhai = this.get_yakuhai(mentsu, hudi, pre_yakuhai, post_yakuhai)
-            let rv = this.get_point(hudi.fu, yakuhai, ronhai, param)
+            let rv = this.get_point(hudi.fu, yakuhai, ronhai, param, hora)
 
             if(! max || rv.point > max.point || rv.point == max.point && (! rv.hansu || rv.hansu > max.hansu || rv.hansu == max.hansu && rv.fu > max.fu)) max = rv
         }
@@ -152,8 +159,8 @@ export class Hora {
         return max
     }
 
-    private static get_point(fu: number, yakuhai: Types.yakuhai, _ronhai: number | null, param: Types.hora_info): Types.point{
-        if(yakuhai.length == 0) return {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: []}
+    private static get_point(fu: number, yakuhai: Types.yakuhai, _ronhai: number | null, param: Types.hora_info, hora: "ron"|"tsumo"): Types.point{
+        if(yakuhai.length == 0) return {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: [], hora: hora}
 
         let ronhai: string | null = null
         if(_ronhai !== null) ronhai = this.toStrMentsu([[_ronhai]])[0]
@@ -250,7 +257,8 @@ export class Hora {
             hansu: hansu,
             yakuman: yakuman,
             point: point + point2,
-            bumpai: bumpai
+            bumpai: bumpai,
+            hora: hora
         }
     }
 
@@ -761,7 +769,7 @@ export class Hora {
                     let m: number[] = (n == Math.floor(horahai / 10) % 10)
                         ? [(sn * 100) + (n * 10) + 1000]
                         : [(sn * 100) + (n * 10)]
-                    mentsu[0].concat(m)
+                    mentsu[0] = mentsu[0].concat(m)
                 }
                 else return[]
             }
@@ -989,9 +997,9 @@ export class Hora {
                 if(n_info == 5) info.tsumo = true
                 if(h_info == 1) info.horahai = true
             }
-            if(info.kami) str_p += "-"
+            if(info.kami) str_p += "+"
             else if(info.toimen) str_p += "="
-            else if(info.simo) str_p += "+"
+            else if(info.simo) str_p += "-"
             if(info.tsumo) str_p += "_"
             if(info.horahai) str_p += "!"
             

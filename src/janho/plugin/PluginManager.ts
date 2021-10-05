@@ -29,6 +29,12 @@ import path from "path"
 import {PluginBase} from "./PluginBase"
 import {PluginLogger} from "./PluginLogger"
 import {VersionInfo} from "../VersionInfo"
+import {PluginPreLoadEvent} from "../event/plugin/PluginPreLoadEvent"
+import {PluginLoadEvent} from "../event/plugin/PluginLoadEvent"
+import {PluginPreUnloadEvent} from "../event/plugin/PluginPreUnloadEvent"
+import {PluginUnloadEvent} from "../event/plugin/PluginUnloadEvent"
+import {PluginEnableEvent} from "../event/plugin/PluginEnableEvent"
+import {PluginDisableEvent} from "../event/plugin/PluginDisableEvent"
 
 export class PluginManager {
     private readonly server: janho.Server
@@ -87,6 +93,7 @@ export class PluginManager {
 
     public async load(){
         if(this.loaded) return
+        new PluginPreLoadEvent(this.server.getEvent()).emit()
 
         let dirpaths: string[] = []
         let pre_names: string[] = []
@@ -142,6 +149,7 @@ export class PluginManager {
                         "json": json
                     }
                     this.plugins[json.name.toLowerCase()]["class"].onEnable()
+                    new PluginEnableEvent(this.server.getEvent(), json.name, json).emit()
                 }else{
                     this.server.getLogger().log("error", "Error!")//todo
                 }
@@ -151,14 +159,18 @@ export class PluginManager {
         }
 
         this.loaded = true
+        new PluginLoadEvent(this.server.getEvent()).emit()
     }
 
     public unload(){
+        new PluginPreUnloadEvent(this.server.getEvent()).emit()
         for(let [name, plugin] of Object.entries(this.plugins)){
             this.server.getLogger().log("info", `Unloading ${plugin.json.name} v${plugin.json.version}`)
             plugin.class.onDisable()
+            new PluginDisableEvent(this.server.getEvent(), plugin.json.name, plugin.json).emit()
         }
         this.plugins = {}
         this.loaded = false
+        new PluginUnloadEvent(this.server.getEvent()).emit()
     }
 }

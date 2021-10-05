@@ -27,7 +27,15 @@ import {Event} from "../Event";
 import {EventBase} from "../EventBase";
 
 export abstract class GameEvent extends EventBase{
-    constructor(event: Event){
+    protected readonly roomId: string
+
+    constructor(event: Event, roomId: string){
         super(event)
+        this.roomId = roomId
+    }
+
+    public emit(){
+        super.emit()
+        this.event.game(this.roomId)
     }
 }

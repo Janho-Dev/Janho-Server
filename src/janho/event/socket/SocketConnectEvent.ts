@@ -33,6 +33,7 @@ export class SocketConnectEvent extends SocketEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.socketConnect(this.socketId)
     }
 }

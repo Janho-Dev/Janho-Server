@@ -27,15 +27,18 @@ import * as Types from "./utils/Types"
 import {Color} from "./utils/Color"
 
 export class Logger {
+    private status: boolean
     private debug: boolean
     private exception: Types.log_exception
 
     constructor(){
+        this.status = true
         this.debug = false
         this.exception = {"": false}
     }
 
     public log(level: Types.level_type, message: any, id?: Types.log_id){
+        if(!(this.status)) return
         if(id !== undefined){
             if(this.exception[id]) return
         }
@@ -63,6 +66,7 @@ export class Logger {
     }
 
     public send(message: string){
+        if(!(this.status)) return
         console.log(message + Color.reset)
     }
 
@@ -80,7 +84,15 @@ export class Logger {
         return this.debug
     }
 
+    public enable(){
+        this.status = true
+    }
+    public disable(){
+        this.status = false
+    }
+
     public newLine(){
+        if(!(this.status)) return
         console.log("")
     }
 }

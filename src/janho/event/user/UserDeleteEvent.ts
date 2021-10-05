@@ -33,6 +33,7 @@ export class UserDeleteEvent extends UserEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.userDelete(this.socketId, this.name)
     }
 }

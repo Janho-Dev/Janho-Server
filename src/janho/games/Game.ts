@@ -52,4 +52,6 @@ export interface Game {
     onSkip(kaze: Types.kaze_number): boolean
     onEnd(): void
     onShukyoku(): void
+    dataDump(option: "all"|"simple"|"detail"): void
+    sendPlayers(socketId: string): void
 }

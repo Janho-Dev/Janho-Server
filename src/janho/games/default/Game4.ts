@@ -33,20 +33,24 @@
  * ・点数加減算
  * 
  * ・skipに関するバグあり
- * ・どこかでjunhaiが変わっている可能性あり
- * ・上家下家判定が曖昧
+ * ・アガリ時緑一色などおかしな結果が出る
+ * ・天和にならない
+ * ・鳴きおかしい？＠クライアント
+ * ・カンがおかしい
+ * ・鳴いた牌が消えない
+ * ・スマホスリープ後に復帰できない
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
+import {Color} from "../../utils/Color"
 import {Game} from "../Game"
 import {Hora} from "../../utils/Hora"
 import {Shipai} from "../../utils/Shipai"
 import {Logger} from "../../Logger"
 import {Candidate} from "../../utils/Candidate"
+import {GameBase} from "./GameBase"
 
-export class Game4 implements Game {
-    private readonly server: janho.Server
-    private readonly roomId: string
+export class Game4 extends GameBase implements Game {
     private readonly hosterId: string
     private players: {[key: string]: Types.player_status}
 
@@ -77,8 +81,7 @@ export class Game4 implements Game {
     private logger: Logger
     
     constructor(server: janho.Server, roomId: string, hosterId: string){
-        this.server = server
-        this.roomId = roomId
+        super(server, roomId)
         this.hosterId = hosterId
         this.players = {}
 
@@ -134,8 +137,16 @@ export class Game4 implements Game {
      */
     public join(socketId: string): boolean{
         if(Object.keys(this.players).length === 4) return false
+        super.join(socketId)
         this.players[socketId] = "wait"
         this.server.addPlayer(socketId, this.roomId)
+        const data = {
+            "1": {"name": this.server.getUserName(Object.keys(this.players)[0]), "status": this.players[Object.keys(this.players)[0]]},
+            "2": {"name": this.server.getUserName(Object.keys(this.players)[1]), "status": this.players[Object.keys(this.players)[1]]},
+            "3": {"name": this.server.getUserName(Object.keys(this.players)[2]), "status": this.players[Object.keys(this.players)[2]]},
+            "4": {"name": this.server.getUserName(Object.keys(this.players)[3]), "status": this.players[Object.keys(this.players)[3]]},
+        }
+        this.server.getProtocol().emitArray("roomUpdate", Object.keys(this.players), {"protocol": "roomUpdate", "data": data})
         return true
     }
 
@@ -147,11 +158,19 @@ export class Game4 implements Game {
      */
     public ready(socketId: string, bool: boolean): boolean{
         if(this.gameStatus !== "wait") return false
+        super.ready(socketId, bool)
         if(bool)
             this.players[socketId] = "ready"
         else
             this.players[socketId] = "wait"
-
+        this.server.getProtocol().emit("readyRoom", socketId, {"protocol": "readyRoom", "result": true})
+        const data = {
+            "1": {"name": this.server.getUserName(Object.keys(this.players)[0]), "status": this.players[Object.keys(this.players)[0]]},
+            "2": {"name": this.server.getUserName(Object.keys(this.players)[1]), "status": this.players[Object.keys(this.players)[1]]},
+            "3": {"name": this.server.getUserName(Object.keys(this.players)[2]), "status": this.players[Object.keys(this.players)[2]]},
+            "4": {"name": this.server.getUserName(Object.keys(this.players)[3]), "status": this.players[Object.keys(this.players)[3]]},
+        }
+        this.server.getProtocol().emitArray("roomUpdate", Object.keys(this.players), {"protocol": "roomUpdate", "data": data})
         let i = 0
         for(const [socketId, status] of Object.entries(this.players)){
             if(status === "ready")
@@ -170,6 +189,7 @@ export class Game4 implements Game {
      */
     public loaded(socketId: string): boolean{
         if(this.gameStatus !== "ready") return false
+        super.loaded(socketId)
         this.players[socketId] = "loaded"
         let i = 0
         for(const [socketId, status] of Object.entries(this.players)){
@@ -184,11 +204,22 @@ export class Game4 implements Game {
         return true
     }
 
+    public sendPlayers(socketId: string){
+        const data = {
+            "1": {"name": this.server.getUserName(Object.keys(this.players)[0]), "status": this.players[Object.keys(this.players)[0]]},
+            "2": {"name": this.server.getUserName(Object.keys(this.players)[1]), "status": this.players[Object.keys(this.players)[1]]},
+            "3": {"name": this.server.getUserName(Object.keys(this.players)[2]), "status": this.players[Object.keys(this.players)[2]]},
+            "4": {"name": this.server.getUserName(Object.keys(this.players)[3]), "status": this.players[Object.keys(this.players)[3]]},
+        }
+        this.server.getProtocol().emit("roomUpdate", socketId, {"protocol": "roomUpdate", "data": data})
+    }
+
     /**
      * ゲーム開始(4人全員に配牌処理)
      */
     public start(): void{
         if(this.gameStatus !== "game") return
+        super.start()
 
         const hai = Shipai.getPai("Game4")
         this.yamahai["rinshan"]["hai"] = hai["rinshan"]
@@ -199,6 +230,9 @@ export class Game4 implements Game {
         this.tehai[2]["hai"] = this.haiSort(hai["sha"])
         this.tehai[1]["hai"] = this.haiSort(hai["nan"])
         this.tehai[0]["hai"] = this.haiSort(hai["ton"])
+
+        const dora = this.dorahai["dora"]["hai"][0]
+        this.dorahai["dora"]["enable"].push(dora)
 
         this.logger.log("debug", "嶺上牌")
         this.logger.log("debug", hai["rinshan"])
@@ -226,10 +260,15 @@ export class Game4 implements Game {
         this.jika[1] = rand[1]
         this.jika[2] = rand[2]
         this.jika[3] = rand[3]
-        this.server.getProtocol().emit("haipai", rand[0], {"protocol": "haipai", "hai": this.tehai[0]["hai"], "kaze": 0})
-        this.server.getProtocol().emit("haipai", rand[1], {"protocol": "haipai", "hai": this.tehai[1]["hai"], "kaze": 1})
-        this.server.getProtocol().emit("haipai", rand[2], {"protocol": "haipai", "hai": this.tehai[2]["hai"], "kaze": 2})
-        this.server.getProtocol().emit("haipai", rand[3], {"protocol": "haipai", "hai": this.tehai[3]["hai"], "kaze": 3})
+
+        const ton = this.server.getUserName(this.jika[0])
+        const nan = this.server.getUserName(this.jika[1])
+        const sha = this.server.getUserName(this.jika[2])
+        const pei = this.server.getUserName(this.jika[3])
+        this.server.getProtocol().emit("haipai", rand[0], {"protocol": "haipai", "hai": this.tehai[0]["hai"], "kaze": 0, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", rand[1], {"protocol": "haipai", "hai": this.tehai[1]["hai"], "kaze": 1, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", rand[2], {"protocol": "haipai", "hai": this.tehai[2]["hai"], "kaze": 2, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", rand[3], {"protocol": "haipai", "hai": this.tehai[3]["hai"], "kaze": 3, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
 
         this.players[this.jika[0]] = "game"
         this.players[this.jika[1]] = "game"
@@ -244,6 +283,7 @@ export class Game4 implements Game {
      */
     public restart(): void{
         //
+        super.restart()
     }
 
     /**
@@ -253,6 +293,7 @@ export class Game4 implements Game {
      */
     public quit(socketId: string): boolean{
         if(this.gameStatus !== "wait") return false
+        super.quit(socketId)
         delete this.players[socketId]
         if(Object.keys(this.players).length === 0){
             this.server.deleteRoom(this.roomId)
@@ -265,6 +306,7 @@ export class Game4 implements Game {
      * @param socketId セッションID
      */
     public dead(socketId: string): void{
+        super.dead(socketId)
         if(this.gameStatus !== "game")
             this.quit(socketId)
         else
@@ -315,7 +357,12 @@ export class Game4 implements Game {
      * ゲームリセット
      */
     public reset(): void{
+        super.reset()
+        this.server.getProtocol().emitArray("resetRoom", Object.keys(this.players), {"protocol": "resetRoom"})
         this.gameStatus = "wait"
+        for(let [str, status] of Object.entries(this.players)){
+            status = "wait"
+        }
 
         this.clearAllTimer()
         this.timer = {}
@@ -372,6 +419,7 @@ export class Game4 implements Game {
      * @param kaze 0 | 1 | 2 | 3
      */
     public onTsumo(kaze: Types.kaze_number): void{
+        super.onTsumo(kaze)
         this.event = "tsumo"
         this.resetRes()
 
@@ -415,19 +463,19 @@ export class Game4 implements Game {
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
-        const tehai = this.tehai[kaze]["hai"].slice()
-        tehai.push(tsumoHai)
-        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": []}}
+        let tehai = this.tehai[kaze]["hai"].slice()
+        tehai = tehai.concat(tsumoHai)
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null}}
         if(hora.yakuhai.length !== 0){
-            result["hora"] = {"hai": [tsumoHai], "combi": []}
+            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"]}
+            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"]}
+            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null}
         }
 
         return result
@@ -442,6 +490,7 @@ export class Game4 implements Game {
      */
     public onDahai(kaze: Types.kaze_number, dahaiHai: number): boolean{
         if(!this.responseCheck(kaze, "dahai", dahaiHai)) return false
+        super.onDahai(kaze, dahaiHai)
 
         this.event = "dahai"
         this.resetRes()
@@ -453,12 +502,17 @@ export class Game4 implements Game {
                 this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(dahaiHai), 1)
                 this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
             }
+        }else if(tsumoHai !== null && Array.isArray(tsumoHai)){
+            this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(dahaiHai), 1)
+            this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
         }
         this.tsumo[kaze] = null
 
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
+
+        this.server.getProtocol().emit("dahai", this.jika[kaze], {"protocol": "dahai", "result": true})
 
         const check = this.dahaiCheck(kaze, dahaiHai)
         let i = 0
@@ -509,46 +563,48 @@ export class Game4 implements Game {
                 false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
 
             let ronhai = dahaiHai
+            let i = 0
             switch(k){
                 case 0:
-                    if(kaze === 1) ronhai += 3
-                    else if(kaze === 2) ronhai += 2
-                    else if(kaze === 3) ronhai += 1
+                    if(kaze === 1) i = 1
+                    else if(kaze === 2) i = 2
+                    else if(kaze === 3) i = 3
                     break;
                 case 1:
-                    if(kaze === 0) ronhai += 1
-                    else if(kaze === 2) ronhai += 3
-                    else if(kaze === 3) ronhai += 2
+                    if(kaze === 0) i = 3
+                    else if(kaze === 2) i = 1
+                    else if(kaze === 3) i = 2
                     break;
                 case 2:
-                    if(kaze === 1) ronhai += 1
-                    else if(kaze === 0) ronhai += 2
-                    else if(kaze === 3) ronhai += 3
+                    if(kaze === 1) i = 3
+                    else if(kaze === 0) i = 2
+                    else if(kaze === 3) i = 1
                     break;
                 case 3:
-                    if(kaze === 1) ronhai += 2
-                    else if(kaze === 2) ronhai += 1
-                    else if(kaze === 0) ronhai += 3
+                    if(kaze === 1) i = 2
+                    else if(kaze === 2) i = 3
+                    else if(kaze === 0) i = 1
                     break;
             }
+            ronhai = ronhai + i
 
             const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], dahaiHai, ronhai, param)
             let pre_result: Types.wait_res = {}
             if(hora.yakuhai.length !== 0){
-                pre_result["hora"] = {"hai": [dahaiHai], "combi": []}
+                pre_result["hora"] = {"hai": [dahaiHai], "combi": [], "from": kaze}
             }
 
             const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
             if(furo["chi"].length !== 0){
-                pre_result["chi"] = {"hai": [dahaiHai], "combi": furo["chi"]}
+                pre_result["chi"] = {"hai": [dahaiHai], "combi": furo["chi"], "from": kaze}
             }
             if(furo["pon"].length !== 0){
-                pre_result["pon"] = {"hai": [dahaiHai], "combi": furo["pon"]}
+                pre_result["pon"] = {"hai": [dahaiHai], "combi": furo["pon"], "from": kaze}
             }
             if(furo["kan"].length !== 0){
-                pre_result["daiminkan"] = {"hai": [dahaiHai], "combi": furo["kan"]}
+                pre_result["kan"] = {"hai": [dahaiHai], "combi": furo["kan"], "from": kaze}
             }
-            
+
             result[k] = pre_result
         }
         return result
@@ -563,6 +619,7 @@ export class Game4 implements Game {
     public onPon(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
         //待機処理
         if(!this.responseCheck(kaze, "pon", furoHai, combi)) return false
+        super.onPon(kaze, furoHai, combi)
 
         this.event = "pon"
         this.resetRes()
@@ -598,11 +655,13 @@ export class Game4 implements Game {
         new_combi.push(furoHai + i)
         this.furo[kaze].push(this.haiSort(new_combi))
 
+        this.tsumo[kaze] = new_combi
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": []}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null}}}
 
         for(let k of num){
             if(k === kaze){
@@ -628,6 +687,7 @@ export class Game4 implements Game {
      public onChi(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean{
         //待機処理
         if(!this.responseCheck(kaze, "chi", furoHai, combi)) return false
+        super.onChi(kaze, furoHai, combi)
 
         this.event = "chi"
         this.resetRes()
@@ -640,11 +700,13 @@ export class Game4 implements Game {
         new_combi.push(furoHai + 3)
         this.furo[kaze].push(this.haiSort(new_combi))
 
+        this.tsumo[kaze] = new_combi
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": []}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null}}}
 
         for(let k of num){
             if(k === kaze){
@@ -670,6 +732,7 @@ export class Game4 implements Game {
     public onKan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
         //待機処理
         if(!this.responseCheck(kaze, "kan", kanHai)) return false
+        super.onKan(kaze, kanHai, combi)
 
         this.event = "kan"
         this.resetRes()
@@ -706,6 +769,8 @@ export class Game4 implements Game {
         new_combi.push(kanHai + i)
         this.furo[kaze].push(this.haiSort(new_combi))
 
+        this.tsumo[kaze] = new_combi
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
@@ -715,11 +780,11 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "result": true})
                 this.kan[k] = true
-                this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
                 this.server.getProtocol().emit("kan", this.jika[k], {"protocol": "kan", "kaze": kaze, "hai": kanHai, "combi": new_combi})
             }
         }
+        this.onKantsumo(kaze)
 
         return true
     }
@@ -727,6 +792,7 @@ export class Game4 implements Game {
     public onAnkan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
         //待機処理
         if(!this.responseCheck(kaze, "ankan", kanHai)) return false
+        super.onAnkan(kaze, kanHai, combi)
 
         this.event = "ankan"
         this.resetRes()
@@ -738,6 +804,8 @@ export class Game4 implements Game {
         this.tehai[kaze].hai = this.haiSort(this.tehai[kaze].hai)
         this.furo[kaze].push(this.haiSort(combi))
 
+        this.tsumo[kaze] = combi
+
         const num: Types.kaze_number[] = [0,1,2,3]
 
         this.updateJunhai()
@@ -747,17 +815,18 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.server.getProtocol().emit("ankan", this.jika[k], {"protocol": "ankan", "result": true})
                 this.kan[k] = true
-                this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
                 this.server.getProtocol().emit("ankan", this.jika[k], {"protocol": "ankan", "kaze": kaze, "hai": kanHai, "combi": combi})
             }
         }
+        this.onKantsumo(kaze)
 
         return true
     }
 
     public onKakan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean{
         if(!this.responseCheck(kaze, "kakan", kanHai)) return false
+        super.onKakan(kaze, kanHai, combi)
 
         this.event = "kakan"
         this.resetRes()
@@ -765,6 +834,8 @@ export class Game4 implements Game {
         const index = this.furo[kaze].indexOf(combi.splice(kanHai, 1))
         this.tehai[kaze].hai.splice(kanHai, 1)
         this.furo[kaze][index].push(kanHai)
+
+        this.tsumo[kaze] = combi
 
         const num: Types.kaze_number[] = [0,1,2,3]
 
@@ -775,11 +846,11 @@ export class Game4 implements Game {
             if(k === kaze){
                 this.server.getProtocol().emit("kakan", this.jika[k], {"protocol": "kakan", "result": true})
                 this.kan[k] = true
-                this.onKantsumo(k)
             }else if(this.players[this.jika[kaze]] === "game"){
                 this.server.getProtocol().emit("kakan", this.jika[k], {"protocol": "kakan", "kaze": kaze, "hai": kanHai, "combi": combi})
             }
         }
+        this.onKantsumo(kaze)
 
         return true
     }
@@ -793,6 +864,7 @@ export class Game4 implements Game {
      * @param tsumoHai 牌ID
      */
     public onKantsumo(kaze: Types.kaze_number): void{
+        super.onKantsumo(kaze)
         //他家の行動待ち(搶槓)
         this.event = "kantsumo"
         this.resetRes()
@@ -836,17 +908,17 @@ export class Game4 implements Game {
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
         const tehai = this.tehai[kaze]["hai"].slice()
         tehai.push(tsumoHai)
-        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": []}}
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null}}
         if(hora.yakuhai.length !== 0){
-            result["hora"] = {"hai": [tsumoHai], "combi": []}
+            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"]}
+            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"]}
+            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null}
         }
 
         return result
@@ -856,6 +928,7 @@ export class Game4 implements Game {
     //
     public onHora(kaze: Types.kaze_number, _horaHai: number): boolean{
         if(!this.responseCheck(kaze, "hora", _horaHai)) return false
+        super.onHora(kaze, _horaHai)
 
         let bakaze: Types.kaze_number
         if(this.info["bakaze"] === 0) bakaze = 0
@@ -872,37 +945,44 @@ export class Game4 implements Game {
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
 
         let horaHai = _horaHai
+        let i = 0
         switch(kaze){
             case 0:
-                if(this.kaze === 1) horaHai += 3
-                else if(this.kaze === 2) horaHai += 2
-                else if(this.kaze === 3) horaHai += 1
-                break
+                if(this.kaze === 1) i = 1
+                else if(this.kaze === 2) i = 2
+                else if(this.kaze === 3) i = 3
+                break;
             case 1:
-                if(this.kaze === 0) horaHai += 1
-                else if(this.kaze === 2) horaHai += 3
-                else if(this.kaze === 3) horaHai += 2
-                break
+                if(this.kaze === 0) i = 3
+                else if(this.kaze === 2) i = 1
+                else if(this.kaze === 3) i = 2
+                break;
             case 2:
-                if(this.kaze === 1) horaHai += 1
-                else if(this.kaze === 0) horaHai += 2
-                else if(this.kaze === 3) horaHai += 3
-                break
+                if(this.kaze === 1) i = 3
+                else if(this.kaze === 0) i = 2
+                else if(this.kaze === 3) i = 1
+                break;
             case 3:
-                if(this.kaze === 1) horaHai += 2
-                else if(this.kaze === 2) horaHai += 1
-                else if(this.kaze === 0) horaHai += 3
-                break
+                if(this.kaze === 1) i = 2
+                else if(this.kaze === 2) i = 3
+                else if(this.kaze === 0) i = 1
+                break;
         }
+        horaHai = horaHai + i
 
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], _horaHai, horaHai, param)
+
+        const data2 = {
+            "tehai": this.tehai[kaze]["hai"], "furo": this.furo[kaze], "horahai": _horaHai,
+            "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"]
+        }
 
         const num: Types.kaze_number[] = [0,1,2,3]
         for(let k of num){
             if(k === kaze){
-                this.server.getProtocol().emit("hora", this.jika[k], {"protocol": "hora", "result": true, "data": hora})
+                this.server.getProtocol().emit("hora", this.jika[k], {"protocol": "hora", "result": true, "kaze": kaze, "data": hora, "data2": data2})
             }else if(this.players[this.jika[kaze]] === "game"){
-                this.server.getProtocol().emit("hora", this.jika[k], {"protocol": "hora", "data": hora})
+                this.server.getProtocol().emit("hora", this.jika[k], {"protocol": "hora", "kaze": kaze, "data": hora, "data2": data2})
             }
         }
 
@@ -914,6 +994,7 @@ export class Game4 implements Game {
     //
     public onRichi(kaze: Types.kaze_number, richiHai: number): boolean{
         if(!this.responseCheck(kaze, "richi", richiHai)) return false
+        super.onRichi(kaze, richiHai)
         this.updateJunhai()
         //TODO
         return true;
@@ -921,19 +1002,24 @@ export class Game4 implements Game {
 
     //
     public onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku = "九種九牌"): boolean{
+        super.onRyukyokuByPlayer(kaze, type)
         //TODO
+        this.reset()
         return true;
     }
 
     //
     public onRyukyoku(type: Types.ryukyoku): void{
+        super.onRyukyoku(type)
         //TODO
+        this.reset()
         return;
     }
 
     public onSkip(kaze: Types.kaze_number): boolean{
         const socketId = this.jika[kaze]
         if(!(socketId in this.waitRes)) return false
+        super.onSkip(kaze)
         delete this.waitRes[socketId]
         this.server.getProtocol().emit("skip", socketId, {"protocol": "skip", "result": true})
         if(Object.keys(this.waitRes).length === 0){
@@ -949,10 +1035,12 @@ export class Game4 implements Game {
     }
 
     public onEnd(){
+        super.onEnd()
         //TODO
     }
 
     public onShukyoku(){
+        super.onShukyoku()
         //TODO
     }
 
@@ -1025,7 +1113,46 @@ export class Game4 implements Game {
                         break;
                 }
             }
-            this.junhai[k] = new_junhai
+            this.junhai[k] = Object.assign({}, new_junhai)
+        }
+    }
+
+    public dataDump(option: "all"|"simple"|"detail"): void{
+        const a = [
+            "Room Id:       ","Hoster Id:     ","Timeout:       ","Game Status:   ",
+            "Kaze:          ","Event:         ","Players:       ","Jika:          ",
+            "Yamahai:       ","Dorahai:       ","Tehai:         ","Junhai:        ",
+            "Furo:          ","Tsumo:         ","Info:          ","Kui:           ",
+            "Kan:           ","Richi:         ","Wait Response: ","Point:         "
+        ]
+        const b = [
+            this.roomId,      this.hosterId,    this.timeout,     this.gameStatus,
+            this.kaze,        this.event,       JSON.stringify(this.players),
+            JSON.stringify(this.jika),          JSON.stringify(this.yamahai),
+            JSON.stringify(this.dorahai),       JSON.stringify(this.tehai),
+            JSON.stringify(this.junhai),        JSON.stringify(this.furo),
+            JSON.stringify(this.tsumo),         JSON.stringify(this.info),
+            JSON.stringify(this.kui),           JSON.stringify(this.kan),
+            JSON.stringify(this.richi),         JSON.stringify(this.waitRes),
+            JSON.stringify(this.point)
+        ]
+        switch(option){
+            case "all":
+                for(let i = 0; i < 20; i++){
+                    console.log(Color.green + a[i] + Color.white + b[i])
+                }
+                break;
+            case "simple":
+                for(let i = 0; i < 20; i++){
+                    const c = [0,1,2,3,4,5,9,13,14,15,16,17,19]
+                    if(c.includes(i)){
+                        console.log(Color.green + a[i] + Color.white + b[i])
+                    }
+                }
+                break;
+            case "detail":
+                console.log("[Game4] detail mode is not implemented.")
+                break;
         }
     }
 }

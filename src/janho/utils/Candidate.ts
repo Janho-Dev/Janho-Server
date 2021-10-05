@@ -39,13 +39,18 @@ export class Candidate {
      */
     static get(
         kaze: Types.kaze_number, jikaze: Types.kaze_number,
-        junhai: {[key in Types.junhai_type]: number[]}, furo: number[][], hai: number
+        _junhai: {[key in Types.junhai_type]: number[]}, _furo: number[][], hai: number
     ): Types.candidated{
 
+        let furo = JSON.parse(JSON.stringify(_furo))
         let param: Types.pre_candidate = {
-            "junhai": {"m": junhai["m"], "p": junhai["p"], "s": junhai["s"], "j": junhai["j"]},
+            "junhai": {"m": [], "p": [], "s": [], "j": []},
             "furo": furo, "hai": hai
         }
+        param["junhai"]["m"] = param["junhai"]["m"].concat(_junhai["m"])
+        param["junhai"]["p"] = param["junhai"]["p"].concat(_junhai["p"])
+        param["junhai"]["s"] = param["junhai"]["s"].concat(_junhai["s"])
+        param["junhai"]["j"] = param["junhai"]["j"].concat(_junhai["j"])
 
         const s = Math.floor(hai / 100) % 10
         const n = Math.floor(hai / 10) % 10

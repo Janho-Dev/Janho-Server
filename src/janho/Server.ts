@@ -25,7 +25,6 @@
 
 import * as socketio from "socket.io"
 import {Game} from "./games/Game"
-import {GameListener} from "./games/GameListener"
 import {Game4} from "./games/default/Game4"
 import {Protocol} from "./protocol/Protocol"
 import {Logger} from "./Logger"
@@ -43,26 +42,24 @@ import {RoomDeleteEvent} from "./event/server/RoomDeleteEvent"
 
 export class Server {
 	private readonly io: socketio.Server
+	private readonly event: Event
 	private readonly network: Protocol
 	private readonly reader: CommandReader
 	private readonly logger: Logger
 	private readonly status: Status
-	private readonly listener: GameListener
 	private readonly plugin: PluginManager
-	private readonly event: Event
 	private users: {[key: string]: string} = {}
 	private players: {[key: string]: string} = {}
 	private rooms: {[key: string]: Game} = {}
 
 	constructor(io: socketio.Server){
 		this.io = io
+		this.event = new Event()
 		this.network = new Protocol(this)
 		this.reader = new CommandReader(this)
 		this.logger = new Logger()
 		this.status = new Status(this)
-		this.listener = new GameListener(this)
 		this.plugin = new PluginManager(this)
-		this.event = new Event()
 	}
 
 	/**
@@ -179,7 +176,6 @@ export class Server {
 		if(!(roomId in this.rooms)){
 			//現在は4麻のみ
 			this.rooms[roomId] = new Game4(this, roomId, hosterId)
-			this.getListener().register(this.rooms[roomId])
 			new RoomAddEvent(this.getEvent(), roomId, hosterId).emit()
 			return true
 		}else
@@ -280,10 +276,6 @@ export class Server {
 
 	public getLogger(): Logger{
 		return this.logger
-	}
-
-	public getListener(): GameListener{
-		return this.listener
 	}
 
 	public getPluginManager(): PluginManager{

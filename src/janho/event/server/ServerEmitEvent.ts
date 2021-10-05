@@ -37,6 +37,7 @@ export class ServerEmitEvent extends ServerEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.serverEmit(this.socketId, this.data)
     }
 }

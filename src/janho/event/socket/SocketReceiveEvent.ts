@@ -35,6 +35,7 @@ export class SocketReceiveEvent extends SocketEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.socketReceive(this.socketId, this.data)
     }
 }

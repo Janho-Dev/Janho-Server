@@ -44,8 +44,8 @@ export class Dahai implements JanhoProtocol {
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
                         const result = room.onDahai(kaze, parsed["hai"])
-                        if(result) this.procEmit(socketId, {"protocol": "dahai", "result": true})
-                        else this.procEmit(socketId, {"protocol": "dahai", "result": false})
+                        if(!result) this.procEmit(socketId, {"protocol": "dahai", "result": false})
+                        //return true --> Game::onDahai()
                     }
                 }
             }

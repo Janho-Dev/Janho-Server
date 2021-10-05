@@ -33,6 +33,7 @@ export class ServerStopEvent extends ServerEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.serverStop()
     }
 }

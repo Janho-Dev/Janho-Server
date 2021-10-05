@@ -23,18 +23,17 @@
  * 
  */
 
-import {Server} from "../Server";
-import {Game} from "./Game";
+import {Event} from "../Event";
+import {GameEvent} from "./GameEvent";
 
-export class GameListener {
-    constructor(server: Server){
-        //
+export class GameStartEvent extends GameEvent{
+
+    constructor(event: Event, roomId: string){
+        super(event, roomId)
     }
 
-    public register(room: Game){
-        //
+    public emit(): boolean{
+        super.emit()
+        return this.event.gameStart(this.roomId)
     }
-    /**
-     * Game-->Game内のEmit Or Recieve関数を用意-->GameListener::registerに送信-->Protocol
-     */
 }

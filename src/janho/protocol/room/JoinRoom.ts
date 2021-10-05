@@ -43,6 +43,8 @@ export class JoinRoom implements JanhoProtocol {
                     const result = room.join(socketId)
                     if(result) this.procEmit(socketId, {"protocol": "joinRoom", "result": true})
                     else this.procEmit(socketId, {"protocol": "joinRoom", "result": false})
+                }else{
+                    this.procEmit(socketId, {"protocol": "joinRoom", "result": false})
                 }
             }
         }

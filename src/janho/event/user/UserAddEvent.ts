@@ -33,6 +33,7 @@ export class UserAddEvent extends UserEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.userAdd(this.socketId, this.name)
     }
 }

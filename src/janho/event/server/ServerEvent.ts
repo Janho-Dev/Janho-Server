@@ -30,4 +30,9 @@ export abstract class ServerEvent extends EventBase{
     constructor(event: Event){
         super(event)
     }
+
+    public emit(){
+        super.emit()
+        this.event.server()
+    }
 }

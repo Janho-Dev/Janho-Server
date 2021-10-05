@@ -42,8 +42,8 @@ export class ReadyRoom implements JanhoProtocol {
                 const room = this.server.getRoom(roomId)
                 if(room !== null){
                     const result = room.ready(socketId, parsed["bool"])
-                    if(result) this.procEmit(socketId, {"protocol": "readyRoom", "result": true})
-                    else this.procEmit(socketId, {"protocol": "readyRoom", "result": false})
+                    if(!result) this.procEmit(socketId, {"protocol": "readyRoom", "result": false})
+                    //return true --> Game::ready()
                 }
             }
         }

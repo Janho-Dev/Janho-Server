@@ -33,6 +33,7 @@ export class ServerLoadEvent extends ServerEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.serverLoad()
     }
 }

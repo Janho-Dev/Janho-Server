@@ -33,6 +33,7 @@ export class UserDeadEvent extends UserEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.userDead(this.socketId, this.name)
     }
 }

@@ -33,6 +33,7 @@ export class SocketDisconnectEvent extends SocketEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.socketDisconnect(this.socketId)
     }
 }

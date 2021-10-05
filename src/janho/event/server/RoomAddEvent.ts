@@ -37,6 +37,7 @@ export class RoomAddEvent extends ServerEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.roomAdd(this.roomId, this.hosterId)
     }
 }

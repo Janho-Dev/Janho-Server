@@ -35,6 +35,7 @@ export class RoomDeleteEvent extends ServerEvent{
     }
 
     public emit(): boolean{
+        super.emit()
         return this.event.roomDelete(this.roomId)
     }
 }

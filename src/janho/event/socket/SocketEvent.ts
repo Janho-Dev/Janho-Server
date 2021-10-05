@@ -33,4 +33,9 @@ export abstract class SocketEvent extends EventBase{
         super(event)
         this.socketId = socketId
     }
+
+    public emit(){
+        super.emit()
+        this.event.socket(this.socketId)
+    }
 }

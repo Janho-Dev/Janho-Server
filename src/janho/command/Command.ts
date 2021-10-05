@@ -34,6 +34,7 @@ import {StatusCommand} from "./default/StatusCommand"
 import {StopCommand} from "./default/StopCommand"
 import {LicenseCommand} from "./default/LicenseCommand"
 import {PluginsCommand} from "./default/PluginsCommand"
+import {MonitorCommand} from "./default/MonitorCommand"
 
 export class Command {
     private readonly server: janho.Server
@@ -50,7 +51,8 @@ export class Command {
             "status": new StatusCommand(this.server),
             "stop": new StopCommand(),
             "license": new LicenseCommand(this.server),
-            "plugins": new PluginsCommand(this.server)
+            "plugins": new PluginsCommand(this.server),
+            "monitor": new MonitorCommand(this.server)
         }
     }
 

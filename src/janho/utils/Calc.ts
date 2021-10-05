@@ -22,3 +22,6 @@
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
+
+export class Calc{
+}

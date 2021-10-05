@@ -31,4 +31,8 @@ export abstract class EventBase{
     constructor(event: Event){
         this.event = event
     }
+
+    public emit(){
+        this.event.event()
+    }
 }
