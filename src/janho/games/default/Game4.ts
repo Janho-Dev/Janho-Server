@@ -420,6 +420,8 @@ export class Game4 extends GameBase implements Game {
      */
     public onTsumo(kaze: Types.kaze_number): void{
         super.onTsumo(kaze)
+
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
         this.event = "tsumo"
         this.resetRes()
 
@@ -621,6 +623,8 @@ export class Game4 extends GameBase implements Game {
         if(!this.responseCheck(kaze, "pon", furoHai, combi)) return false
         super.onPon(kaze, furoHai, combi)
 
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
+
         this.event = "pon"
         this.resetRes()
 
@@ -689,6 +693,8 @@ export class Game4 extends GameBase implements Game {
         if(!this.responseCheck(kaze, "chi", furoHai, combi)) return false
         super.onChi(kaze, furoHai, combi)
 
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
+
         this.event = "chi"
         this.resetRes()
 
@@ -733,6 +739,8 @@ export class Game4 extends GameBase implements Game {
         //待機処理
         if(!this.responseCheck(kaze, "kan", kanHai)) return false
         super.onKan(kaze, kanHai, combi)
+
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
 
         this.event = "kan"
         this.resetRes()
@@ -865,6 +873,8 @@ export class Game4 extends GameBase implements Game {
      */
     public onKantsumo(kaze: Types.kaze_number): void{
         super.onKantsumo(kaze)
+
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
         //他家の行動待ち(搶槓)
         this.event = "kantsumo"
         this.resetRes()
