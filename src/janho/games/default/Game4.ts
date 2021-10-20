@@ -35,8 +35,6 @@
  * ・skipに関するバグあり
  * ・アガリ時緑一色などおかしな結果が出る
  * ・天和にならない
- * ・鳴きおかしい？＠クライアント
- * ・カンがおかしい
  * ・鳴いた牌が消えない
  * ・スマホスリープ後に復帰できない
  */
@@ -49,6 +47,7 @@ import {Shipai} from "../../utils/Shipai"
 import {Logger} from "../../Logger"
 import {Candidate} from "../../utils/Candidate"
 import {GameBase} from "./GameBase"
+import {Shanten} from "../../utils/Shanten"
 
 export class Game4 extends GameBase implements Game {
     private readonly hosterId: string
@@ -75,6 +74,7 @@ export class Game4 extends GameBase implements Game {
     private kaze: Types.kaze_number
     private event: Types.event
     private waitRes: {[key: string]: {"protocol": Types.wait_res}}
+    private suteCache: {[key in Types.kaze_number]: number | null}
 
     private point: {[key in Types.kaze_number]: number}
 
@@ -121,6 +121,7 @@ export class Game4 extends GameBase implements Game {
         this.kaze = 0
         this.event = "tsumo"
         this.waitRes = {}
+        this.suteCache = {0: null, 1: null, 2: null, 3: null}
 
         this.point = {0: 25000, 1: 25000, 2: 25000, 3: 25000}
 
@@ -397,6 +398,7 @@ export class Game4 extends GameBase implements Game {
 
         this.kaze = 0
         this.waitRes = {}
+        this.suteCache = {0: null, 1: null, 2: null, 3: null}
 
         this.point = {0: 25000, 1: 25000, 2: 25000, 3: 25000}
     }
@@ -460,6 +462,9 @@ export class Game4 extends GameBase implements Game {
         const richi = this.richi[kaze]
         const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 1 : 0
         const tenho = (this.yamahai["tsumo"]["hai"]. length === 69)? 1 : 0
+
+        const shanten = Shanten.shanten(this.furo[kaze], this.junhai[kaze], this.tsumo[kaze])
+        //console.log(shanten)//立直時打牌できる牌を取得したい
 
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
@@ -529,6 +534,25 @@ export class Game4 extends GameBase implements Game {
                 this.setTimer(this.jika[k], {"protocol": "skip"})
             }
         }
+
+        //四風連打判定
+        if(this.suteCache[kaze] === null){
+            this.suteCache[kaze] = dahaiHai
+        }
+        if(this.suteCache[0] !== null && this.suteCache[1] !== null &&
+            this.suteCache[2] !== null && this.suteCache[3]){
+                if(this.suteCache[0] === this.suteCache[1] &&
+                    this.suteCache[0] === this.suteCache[2] &&
+                    this.suteCache[0] === this.suteCache[3]){
+                        if((Math.floor(this.suteCache[0] / 100) % 10) === 4){
+                            const s = Math.floor(this.suteCache[0] / 10) % 10
+                            if(s >= 1 && s <= 4){
+                                this.onRyukyoku("四風連打")
+                            }
+                        }
+                }
+        }    
+
         if(i === 0){
             if(this.kaze === 3) this.kaze = 0
             else if(this.kaze === 2) this.kaze = 3
@@ -1014,6 +1038,7 @@ export class Game4 extends GameBase implements Game {
     public onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku = "九種九牌"): boolean{
         super.onRyukyokuByPlayer(kaze, type)
         //TODO
+        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type})
         this.reset()
         return true;
     }
@@ -1022,6 +1047,7 @@ export class Game4 extends GameBase implements Game {
     public onRyukyoku(type: Types.ryukyoku): void{
         super.onRyukyoku(type)
         //TODO
+        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type})
         this.reset()
         return;
     }

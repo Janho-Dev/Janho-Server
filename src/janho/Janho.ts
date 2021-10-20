@@ -91,7 +91,7 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
     io = new socketio.Server(hoster, {
         allowEIO3: true,
         cors: {
-            origin: ["file://", "http://localhost:7456", "https://game.janhoyaba.com"],
+            origin: ["file://", "http://localhost:7456", "https://www.janhoyaba.com", "https://sub.janhoyaba.com"],
             methods: ["GET", "POST"]
         }
     })
