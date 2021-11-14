@@ -38,7 +38,7 @@ export interface Game {
     reset(): void
     getKaze(socketId: string): Types.kaze_number | null
     onTsumo(kaze: Types.kaze_number): void
-    onDahai(kaze: Types.kaze_number, dahaiHai: number): boolean
+    onDahai(kaze: Types.kaze_number, dahaiHai: number, isRichi: boolean): boolean
     onPon(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean
     onChi(kaze: Types.kaze_number, furoHai: number, combi: number[]): boolean
     onKan(kaze: Types.kaze_number, kanHai: number, combi: number[]): boolean

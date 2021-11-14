@@ -30,15 +30,17 @@ import {GameEvent} from "../GameEvent";
 export class DahaiEvent extends GameEvent{
     private readonly kaze: kaze_number
     private readonly dahaiHai: number
+    private readonly isRichi: boolean
 
-    constructor(event: Event, roomId: string, kaze: kaze_number, dahaiHai: number){
+    constructor(event: Event, roomId: string, kaze: kaze_number, dahaiHai: number, isRichi: boolean){
         super(event, roomId)
         this.kaze = kaze
         this.dahaiHai = dahaiHai
+        this.isRichi = isRichi
     }
 
     public emit(): boolean{
         super.emit()
-        return this.event.dahai(this.roomId, this.kaze, this.dahaiHai)
+        return this.event.dahai(this.roomId, this.kaze, this.dahaiHai, this.isRichi)
     }
 }

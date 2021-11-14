@@ -117,7 +117,7 @@ export class Hora {
         junhai["p"] = junhai["p"].concat(_junhai["p"])
         junhai["s"] = junhai["s"].concat(_junhai["s"])
         junhai["j"] = junhai["j"].concat(_junhai["j"])
-        if(typeof tsumohai === "number"){//??そもそもtsumoって配列になるの？todo
+        if(typeof tsumohai === "number"){
             const s = Math.floor(tsumohai / 100) % 10
             const n = Math.floor(tsumohai / 10) % 10
         

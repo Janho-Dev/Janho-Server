@@ -27,6 +27,65 @@ import * as Types from "./Types"
 
 export class Shanten {
 
+    static getHai(tehai: number[], furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, param: Types.hora_info)
+    : {[key in number]: number[]} | null {
+
+        let result: {[key: number]: number[]} = {}
+
+        let _junhai_: {[key in Types.junhai_type]: number[]} = {"m": [], "p": [], "s": [], "j": []}
+        _junhai_["m"] = _junhai_["m"].concat(junhai["m"])
+        _junhai_["p"] = _junhai_["p"].concat(junhai["p"])
+        _junhai_["s"] = _junhai_["s"].concat(junhai["s"])
+        _junhai_["j"] = _junhai_["j"].concat(junhai["j"])
+        if(this.shanten(furo, _junhai_, tsumohai) !== 0) return null
+
+        //捨てた後のシャン点数0 = 捨て可能牌
+        let _tehai = tehai.slice()
+        _tehai.push(tsumohai)
+        for(let hai of _tehai){
+            let __tehai = _tehai.slice()
+            __tehai.splice(__tehai.indexOf(hai), 1)
+            //
+            let _junhai = {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}
+            for(let _hai of __tehai){
+                const s = Math.floor(_hai / 100) % 10
+                const n = Math.floor(_hai / 10) % 10
+                switch(s){
+                    case 1:
+                        _junhai["m"][n] += 1
+                        if(n === 0) _junhai["m"][5] += 1
+                        break;
+                    case 2:
+                        _junhai["p"][n] += 1
+                        if(n === 0) _junhai["p"][5] += 1
+                        break;
+                    case 3:
+                        _junhai["s"][n] += 1
+                        if(n === 0) _junhai["s"][5] += 1
+                        break;
+                    case 4:
+                        _junhai["j"][n] += 1
+                        break;
+                }
+            }
+            //
+
+            let __junhai_: {[key in Types.junhai_type]: number[]} = {"m": [], "p": [], "s": [], "j": []}
+            __junhai_["m"] = __junhai_["m"].concat(_junhai["m"])
+            __junhai_["p"] = __junhai_["p"].concat(_junhai["p"])
+            __junhai_["s"] = __junhai_["s"].concat(_junhai["s"])
+            __junhai_["j"] = __junhai_["j"].concat(_junhai["j"])
+            
+            if(this.shanten(furo, __junhai_, null) === 0){
+                const tenpai = this.tenpai(furo, __junhai_, null)
+                if(tenpai !== null)
+                    result[hai] = tenpai
+                    //自摸のみの場合は和了の時に判定する
+            }
+        }
+        return result
+    }
+
     /**
      * 向聴数の解
      * @param furo 牌ID[][]
@@ -251,5 +310,30 @@ export class Shanten {
         }
         if(janto) tatsu++
         return 13 - mentsu * 3 - tatsu * 2 - koritsu
+    }
+
+    private static tenpai(
+        furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumo: number[] | number | null
+    ): number[] | null{
+
+        if (tsumo !== null) return null
+    
+        let hai = []
+        let n_shanten = this.shanten(furo, _junhai, tsumo)
+        const kaze: Types.junhai_type[] = ["m","p","s","j"]
+        for (let s of kaze) {
+            let junhai = _junhai[s]
+            for (let n = 1; n < junhai.length; n++) {
+                if (junhai[n] >= 4) continue
+                junhai[n]++
+                let n_s = 100
+                if(s === "p") n_s = 200
+                else if(s === "s") n_s = 300
+                else if(s === "j") n_s = 400
+                if (this.shanten(furo, _junhai, tsumo) < n_shanten) hai.push(n_s+(n*10))
+                junhai[n]--
+            }
+        }
+        return hai
     }
 }

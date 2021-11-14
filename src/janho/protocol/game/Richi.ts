@@ -26,7 +26,7 @@
 import * as janho from "../../Server"
 import {JanhoProtocol} from "../JanhoProtocol"
 
-export class Dahai implements JanhoProtocol {
+export class Richi implements JanhoProtocol {
     private readonly server: janho.Server
     
     constructor(server: janho.Server){
@@ -43,9 +43,10 @@ export class Dahai implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onDahai(kaze, parsed["hai"], false)
-                        if(!result) this.procEmit(socketId, {"protocol": "dahai", "result": false})
-                        //return true --> Game::onDahai()
+                        const result = room.onRichi(kaze, parsed["hai"])
+                        if(!result) this.procEmit(socketId, {"protocol": "richi", "result": false})
+                        else this.procEmit(socketId, {"protocol": "richi", "result": true})//todo
+                        //return true --> Game::onRichi()
                     }
                 }
             }

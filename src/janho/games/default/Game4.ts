@@ -25,18 +25,19 @@
 
 /**
  * 未実装項目
- * ・立直
- * ・立直後の一発、ツモ
+ * ・ドラめくり、裏ドラ
  * ・嶺上開花
  * ・流局
  * ・チャンカン
  * ・点数加減算
+ * ・鳴きの優先度(和了>ポン>チー)
  * 
  * ・skipに関するバグあり
  * ・アガリ時緑一色などおかしな結果が出る
  * ・天和にならない
- * ・鳴いた牌が消えない
+ * ・鳴いた牌が消えない(クライアントは対応済み)
  * ・スマホスリープ後に復帰できない
+ * ・重複部分のリファクタリング
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
@@ -463,26 +464,37 @@ export class Game4 extends GameBase implements Game {
         const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 1 : 0
         const tenho = (this.yamahai["tsumo"]["hai"]. length === 69)? 1 : 0
 
-        const shanten = Shanten.shanten(this.furo[kaze], this.junhai[kaze], this.tsumo[kaze])
-        //console.log(shanten)//立直時打牌できる牌を取得したい
-
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
-        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
+
+        const richiHai = Shanten.getHai(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, param)
+        //待ち牌から立直可能牌を求める処理をShantenに記述
+
         let tehai = this.tehai[kaze]["hai"].slice()
         tehai = tehai.concat(tsumoHai)
-        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null}}
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null, "data": {}}}
+        if(this.richi[kaze]["bool"]) result["dahai"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
+
+        if(richiHai !== null && this.richi[kaze]["bool"] === false){
+            let richiHais: number[] = []
+            for(let hai of Object.keys(richiHai)){
+                richiHais.push(Number(hai))
+            }
+            result["richi"] = {"hai": richiHais, "combi": [], "from": null, "data": richiHai}
+        }
+
+        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
         if(hora.yakuhai.length !== 0){
-            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null}
+            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null}
+            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null, "data": {}}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null}
+            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null, "data": {}}
         }
 
         return result
@@ -495,12 +507,15 @@ export class Game4 extends GameBase implements Game {
      * @param dahaiHai 牌ID
      * クライアントからの受信
      */
-    public onDahai(kaze: Types.kaze_number, dahaiHai: number): boolean{
-        if(!this.responseCheck(kaze, "dahai", dahaiHai)) return false
-        super.onDahai(kaze, dahaiHai)
+    public onDahai(kaze: Types.kaze_number, dahaiHai: number, isRichi: boolean = false): boolean{
+        if(!this.responseCheck(kaze, "dahai", dahaiHai) && !isRichi) return false
+        super.onDahai(kaze, dahaiHai, isRichi)
 
         this.event = "dahai"
         this.resetRes()
+
+        if(!isRichi) this.richi[kaze]["ippatu"] = false
+
         const tsumoHai = this.tsumo[kaze]
         this.tehai[kaze].sute.push(dahaiHai)
         if(tsumoHai !== null && typeof tsumoHai === "number"){
@@ -519,14 +534,16 @@ export class Game4 extends GameBase implements Game {
 
         this.updateJunhai()
 
-        this.server.getProtocol().emit("dahai", this.jika[kaze], {"protocol": "dahai", "result": true})
+        this.server.getProtocol().emit(isRichi ? "richi" : "dahai", this.jika[kaze], {"protocol": isRichi ? "richi" : "dahai", "result": true})
 
         const check = this.dahaiCheck(kaze, dahaiHai)
         let i = 0
         for(let k of num){
             if(k === kaze) continue
             if(this.players[this.jika[k]] === "game"){
-                this.server.getProtocol().emit("dahai", this.jika[k], {"protocol": "dahai", "kaze": kaze, "hai": dahaiHai})
+                this.server.getProtocol().emit(isRichi ? "richi" : "dahai", this.jika[k], {
+                    "protocol": isRichi ? "richi" : "dahai", "kaze": kaze, "hai": dahaiHai
+                })
                 this.server.getProtocol().emit("candidate", this.jika[k], {"protocol": "candidate", "data": check[k]})
                 if(Object.keys(check[k]).length === 0) continue
                 i++
@@ -617,18 +634,20 @@ export class Game4 extends GameBase implements Game {
             const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], dahaiHai, ronhai, param)
             let pre_result: Types.wait_res = {}
             if(hora.yakuhai.length !== 0){
-                pre_result["hora"] = {"hai": [dahaiHai], "combi": [], "from": kaze}
+                pre_result["hora"] = {"hai": [dahaiHai], "combi": [], "from": kaze, "data": {}}
             }
 
-            const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
-            if(furo["chi"].length !== 0){
-                pre_result["chi"] = {"hai": [dahaiHai], "combi": furo["chi"], "from": kaze}
-            }
-            if(furo["pon"].length !== 0){
-                pre_result["pon"] = {"hai": [dahaiHai], "combi": furo["pon"], "from": kaze}
-            }
-            if(furo["kan"].length !== 0){
-                pre_result["kan"] = {"hai": [dahaiHai], "combi": furo["kan"], "from": kaze}
+            if(this.richi[k]["bool"] === false){
+                const furo = Candidate.get(kaze, k, this.junhai[k], this.furo[k], dahaiHai)
+                if(furo["chi"].length !== 0){
+                    pre_result["chi"] = {"hai": [dahaiHai], "combi": furo["chi"], "from": kaze, "data": {}}
+                }
+                if(furo["pon"].length !== 0){
+                    pre_result["pon"] = {"hai": [dahaiHai], "combi": furo["pon"], "from": kaze, "data": {}}
+                }
+                if(furo["kan"].length !== 0){
+                    pre_result["kan"] = {"hai": [dahaiHai], "combi": furo["kan"], "from": kaze, "data": {}}
+                }
             }
 
             result[k] = pre_result
@@ -689,7 +708,7 @@ export class Game4 extends GameBase implements Game {
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null, "data": {}}}}
 
         for(let k of num){
             if(k === kaze){
@@ -736,7 +755,7 @@ export class Game4 extends GameBase implements Game {
 
         this.updateJunhai()
         this.kaze = kaze
-        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null}}}
+        this.waitRes[this.jika[kaze]] = {"protocol": {"dahai": {"hai": this.tehai[kaze].hai, "combi": [], "from": null, "data": {}}}}
 
         for(let k of num){
             if(k === kaze){
@@ -942,17 +961,17 @@ export class Game4 extends GameBase implements Game {
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
         const tehai = this.tehai[kaze]["hai"].slice()
         tehai.push(tsumoHai)
-        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null}}
+        let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null, "data": {}}}
         if(hora.yakuhai.length !== 0){
-            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null}
+            result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
         }
 
         const furo = Candidate.get(kaze, kaze, this.junhai[kaze], this.furo[kaze], tsumoHai)
         if(furo["kan"].length !== 0){
-            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null}
+            result["ankan"] = {"hai": [tsumoHai], "combi": furo["kan"], "from": null, "data": {}}
         }
         if(furo["kakan"].length !== 0){
-            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null}
+            result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null, "data": {}}
         }
 
         return result
@@ -972,7 +991,7 @@ export class Game4 extends GameBase implements Game {
 
         const richi = this.richi[kaze]
         const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 2 : 0
-        const tenho = (this.yamahai["tsumo"]["hai"]. length === 69)? 2 : 0
+        const tenho = (this.yamahai["tsumo"]["hai"].length === 69)? 2 : 0
 
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
@@ -1029,8 +1048,11 @@ export class Game4 extends GameBase implements Game {
     public onRichi(kaze: Types.kaze_number, richiHai: number): boolean{
         if(!this.responseCheck(kaze, "richi", richiHai)) return false
         super.onRichi(kaze, richiHai)
-        this.updateJunhai()
-        //TODO
+        this.richi[kaze]["bool"] = true
+        this.richi[kaze]["ippatu"] = true
+        if(this.tehai[kaze]["sute"].length === 0) this.richi[kaze]["double"] = true
+        this.info["richi"] = this.info["richi"] + 1 //局終了後に減らす
+        this.onDahai(kaze, richiHai, true)
         return true;
     }
 

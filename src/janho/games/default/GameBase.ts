@@ -85,8 +85,8 @@ export abstract class GameBase{
     public onTsumo(kaze: kaze_number){
         new TsumoEvent(this.server.getEvent(), this.roomId, kaze).emit()
     }
-    public onDahai(kaze: kaze_number, dahaiHai: number){
-        new DahaiEvent(this.server.getEvent(), this.roomId, kaze, dahaiHai).emit()
+    public onDahai(kaze: kaze_number, dahaiHai: number, isRichi: boolean){
+        new DahaiEvent(this.server.getEvent(), this.roomId, kaze, dahaiHai, isRichi).emit()
     }
     public onPon(kaze: kaze_number, furoHai: number, combi: number[]){
         new PonEvent(this.server.getEvent(), this.roomId, kaze, furoHai, combi).emit()

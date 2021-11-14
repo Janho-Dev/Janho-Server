@@ -76,7 +76,7 @@ export class Event{
 
     //game/mahjoung
     private readonly _tsumoEvent: EventPort<(roomId: string, kaze: kaze_number) => void>
-    private readonly _dahaiEvent: EventPort<(roomId: string, kaze: kaze_number, dahaiHai: number) => void>
+    private readonly _dahaiEvent: EventPort<(roomId: string, kaze: kaze_number, dahaiHai: number, isRichi: boolean) => void>
     private readonly _ponEvent: EventPort<(roomId: string, kaze: kaze_number, furoHai: number, combi: number[]) => void>
     private readonly _chiEvent: EventPort<(roomId: string, kaze: kaze_number, furoHai: number, combi: number[]) => void>
     private readonly _kanEvent: EventPort<(roomId: string, kaze: kaze_number, kanHai: number, combi: number[]) => void>
@@ -311,8 +311,8 @@ export class Event{
         return this.emitter.emit(this._tsumoEvent, roomId, kaze)
     }
     public get dahaiEvent() { return this._dahaiEvent }
-    public dahai(roomId: string, kaze: kaze_number, dahaiHai: number): boolean{
-        return this.emitter.emit(this._dahaiEvent, roomId, kaze, dahaiHai)
+    public dahai(roomId: string, kaze: kaze_number, dahaiHai: number, isRichi: boolean): boolean{
+        return this.emitter.emit(this._dahaiEvent, roomId, kaze, dahaiHai, isRichi)
     }
     public get ponEvent() { return this._ponEvent }
     public pon(roomId: string, kaze: kaze_number, furoHai: number, combi: number[]): boolean{

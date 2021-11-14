@@ -51,8 +51,9 @@ import {Pon} from "./game/Pon"
 import {Ankan} from "./game/Ankan"
 import {Kakan} from "./game/Kakan"
 import {ResetRoom} from "./room/ResetRoom"
-import { RoomUpdate } from "./room/RoomUpdate"
-import { Turn } from "./game/Turn"
+import {RoomUpdate} from "./room/RoomUpdate"
+import {Turn} from "./game/Turn"
+import {Richi} from "./game/Richi"
 
 
 export class Protocol {
@@ -89,7 +90,8 @@ export class Protocol {
             "pon": new Pon(this.server),
             "ankan": new Ankan(this.server),
             "kakan": new Kakan(this.server),
-            "turn": new Turn(this.server)
+            "turn": new Turn(this.server),
+            "richi": new Richi(this.server)
         }
     }
 
