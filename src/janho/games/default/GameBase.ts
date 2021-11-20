@@ -29,7 +29,6 @@ import { PlayerJoinEvent } from "../../event/game/PlayerJoinEvent"
 import { PlayerReadyEvent } from "../../event/game/PlayerReadyEvent"
 import { PlayerLoadedEvent } from "../../event/game/PlayerLoadedEvent"
 import { GameStartEvent } from "../../event/game/GameStartEvent"
-import { GameRestartEvent } from "../../event/game/GameRestartEvent"
 import { PlayerQuitEvent } from "../../event/game/PlayerQuitEvent"
 import { PlayerDeadEvent } from "../../event/game/PlayerDeadEvent"
 import { GameResetEvent } from "../../event/game/GameResetEvent"
@@ -69,9 +68,6 @@ export abstract class GameBase{
     }
     public start(){
         new GameStartEvent(this.server.getEvent(), this.roomId).emit()
-    }
-    public restart(){
-        new GameRestartEvent(this.server.getEvent(), this.roomId).emit()
     }
     public quit(socketId: string){
         new PlayerQuitEvent(this.server.getEvent(), this.roomId, socketId).emit()
@@ -121,7 +117,7 @@ export abstract class GameBase{
     public onSkip(kaze: kaze_number){
         new SkipEvent(this.server.getEvent(), this.roomId, kaze).emit()
     }
-    public onEnd(){
+    public onEnd(hora: kaze_number[] | null, point: number[]){
         new EndEvent(this.server.getEvent(), this.roomId).emit()
     }
     public onShukyoku(){

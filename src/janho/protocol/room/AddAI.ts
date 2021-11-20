@@ -26,7 +26,7 @@
  import * as janho from "../../Server"
  import {JanhoProtocol} from "../JanhoProtocol"
 
-export class ResetRoom implements JanhoProtocol {
+export class AddAI implements JanhoProtocol {
     private readonly server: janho.Server
     
     constructor(server: janho.Server){
@@ -34,6 +34,12 @@ export class ResetRoom implements JanhoProtocol {
     }
 
     public procReceive(socketId: string, data: string): void{
+        const roomId = this.server.getPlayerRoomId(socketId)
+        if(roomId === null) return
+        const room = this.server.getRoom(roomId)
+        if(room !== null){
+            room.addAI()
+        }
     }
 
     public procEmit(socketId: string, json: {}): void{

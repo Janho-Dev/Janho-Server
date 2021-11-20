@@ -24,6 +24,7 @@
  */
 
 import * as Types from "./Types"
+import {Shanten} from "./Shanten"
 
 export class Hora {
 
@@ -97,12 +98,11 @@ export class Hora {
         }
     }
 
-    static hora(_tehai: number[], __furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number, param: Types.hora_info){
+    static hora(_tehai: number[], __furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number | null, param: Types.hora_info){
         let tehai = _tehai.slice()
         
-        const h = Math.floor(ronhai / 1) % 10
         let hora: "ron"|"tsumo" = "ron"
-        if(h === 0) hora = "tsumo"
+        if(ronhai === null) hora = "tsumo"
         let max :Types.point = {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: [], hora: hora}
 
         let _furo: number[][] = []
@@ -117,6 +117,16 @@ export class Hora {
         junhai["p"] = junhai["p"].concat(_junhai["p"])
         junhai["s"] = junhai["s"].concat(_junhai["s"])
         junhai["j"] = junhai["j"].concat(_junhai["j"])
+
+        if(Shanten.shanten(furo, junhai, tsumohai) <= 0){
+            const tp = Shanten.tenpai(furo, junhai, null)
+            if(tp !== null){
+                if(!tp.includes(tsumohai)) return max
+            }else{
+                return max
+            }
+        }else  return max
+        
         if(typeof tsumohai === "number"){
             const s = Math.floor(tsumohai / 100) % 10
             const n = Math.floor(tsumohai / 10) % 10
@@ -155,7 +165,6 @@ export class Hora {
 
             if(! max || rv.point > max.point || rv.point == max.point && (! rv.hansu || rv.hansu > max.hansu || rv.hansu == max.hansu && rv.fu > max.fu)) max = rv
         }
-
         return max
     }
 

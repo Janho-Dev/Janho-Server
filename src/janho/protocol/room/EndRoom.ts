@@ -23,17 +23,21 @@
  * 
  */
 
-import {Event} from "../Event";
-import {GameEvent} from "./GameEvent";
+ import * as janho from "../../Server"
+ import {JanhoProtocol} from "../JanhoProtocol"
 
-export class GameRestartEvent extends GameEvent{
-
-    constructor(event: Event, roomId: string){
-        super(event, roomId)
+export class EndRoom implements JanhoProtocol {
+    private readonly server: janho.Server
+    
+    constructor(server: janho.Server){
+        this.server = server
     }
 
-    public emit(): boolean{
-        super.emit()
-        return this.event.gameRestart(this.roomId)
+    public procReceive(socketId: string, data: string): void{
+    }
+
+    public procEmit(socketId: string, json: {}): void{
+        const data = JSON.stringify(json)
+        this.server.emitData(socketId, data)
     }
 }

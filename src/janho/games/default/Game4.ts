@@ -25,12 +25,11 @@
 
 /**
  * 未実装項目
- * ・ドラめくり、裏ドラ
  * ・嶺上開花
- * ・流局
+ * ・流局 "四家立直" "三家和"
  * ・チャンカン
- * ・点数加減算
  * ・鳴きの優先度(和了>ポン>チー)
+ * ・和了れる形なのに和了できない[三暗刻のみなど]
  * 
  * ・skipに関するバグあり
  * ・アガリ時緑一色などおかしな結果が出る
@@ -49,10 +48,13 @@ import {Logger} from "../../Logger"
 import {Candidate} from "../../utils/Candidate"
 import {GameBase} from "./GameBase"
 import {Shanten} from "../../utils/Shanten"
+import {Game4AI} from "../default/Game4AI"
 
 export class Game4 extends GameBase implements Game {
     private readonly hosterId: string
     private players: {[key: string]: Types.player_status}
+
+    private firstTime: boolean
 
     private gameStatus: Types.game_status
 
@@ -80,11 +82,15 @@ export class Game4 extends GameBase implements Game {
     private point: {[key in Types.kaze_number]: number}
 
     private logger: Logger
+
+    private AIPlayer: Game4AI
     
     constructor(server: janho.Server, roomId: string, hosterId: string){
         super(server, roomId)
         this.hosterId = hosterId
         this.players = {}
+
+        this.firstTime = true
 
         this.gameStatus = "wait"
         this.timer = {}
@@ -130,6 +136,8 @@ export class Game4 extends GameBase implements Game {
         this.server.addPlayer(this.hosterId, this.roomId)
 
         this.logger = this.server.getLogger()
+
+        this.AIPlayer = new Game4AI(this)
     }
 
     /**
@@ -178,6 +186,7 @@ export class Game4 extends GameBase implements Game {
             if(status === "ready")
                 i++
         }
+
         if(i !== 4) return true
         this.gameStatus = "ready"
         this.server.getProtocol().emitArray("startRoom", Object.keys(this.players), {"protocol": "startRoom"})
@@ -232,6 +241,8 @@ export class Game4 extends GameBase implements Game {
         this.tehai[2]["hai"] = this.haiSort(hai["sha"])
         this.tehai[1]["hai"] = this.haiSort(hai["nan"])
         this.tehai[0]["hai"] = this.haiSort(hai["ton"])
+        //this.tehai[0]["hai"] = [110,190,210,290,310,390,410,420,430,440,450,460,470] 緑一色問題
+        //this.tehai[0]["hai"] = [110,110,110,120,120,120,130,130,130,140,150,160,430] 訳無し問題
 
         const dora = this.dorahai["dora"]["hai"][0]
         this.dorahai["dora"]["enable"].push(dora)
@@ -253,39 +264,36 @@ export class Game4 extends GameBase implements Game {
         this.logger.log("debug", "東")
         this.logger.log("debug", hai["ton"])
 
-        let ids: string[] = Object.keys(this.players)
-        let rand: string[] = []
-        while(ids.length){
-            rand.push(ids.splice(Math.random() * ids.length, 1)[0])
+        if(this.firstTime){
+            let ids: string[] = Object.keys(this.players)
+            let rand: string[] = []
+            while(ids.length){
+                rand.push(ids.splice(Math.random() * ids.length, 1)[0])
+            }
+            this.jika[0] = rand[0]
+            this.jika[1] = rand[1]
+            this.jika[2] = rand[2]
+            this.jika[3] = rand[3]
         }
-        this.jika[0] = rand[0]
-        this.jika[1] = rand[1]
-        this.jika[2] = rand[2]
-        this.jika[3] = rand[3]
 
         const ton = this.server.getUserName(this.jika[0])
         const nan = this.server.getUserName(this.jika[1])
         const sha = this.server.getUserName(this.jika[2])
         const pei = this.server.getUserName(this.jika[3])
-        this.server.getProtocol().emit("haipai", rand[0], {"protocol": "haipai", "hai": this.tehai[0]["hai"], "kaze": 0, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
-        this.server.getProtocol().emit("haipai", rand[1], {"protocol": "haipai", "hai": this.tehai[1]["hai"], "kaze": 1, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
-        this.server.getProtocol().emit("haipai", rand[2], {"protocol": "haipai", "hai": this.tehai[2]["hai"], "kaze": 2, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
-        this.server.getProtocol().emit("haipai", rand[3], {"protocol": "haipai", "hai": this.tehai[3]["hai"], "kaze": 3, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", this.jika[0], {"protocol": "haipai", "hai": this.tehai[0]["hai"], "kaze": 0, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", this.jika[1], {"protocol": "haipai", "hai": this.tehai[1]["hai"], "kaze": 1, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", this.jika[2], {"protocol": "haipai", "hai": this.tehai[2]["hai"], "kaze": 2, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+        this.server.getProtocol().emit("haipai", this.jika[3], {"protocol": "haipai", "hai": this.tehai[3]["hai"], "kaze": 3, "dora": dora, "ton": ton, "nan": nan, "sha": sha, "pei": pei})
+
+        this.server.getProtocol().emitArray("info", Object.keys(this.players), {"protocol": "info", "bakaze": this.info.bakaze, "kyoku": this.info.kyoku, "homba": this.info.homba, "richi": this.info.richi, "point": this.point})
 
         this.players[this.jika[0]] = "game"
         this.players[this.jika[1]] = "game"
         this.players[this.jika[2]] = "game"
         this.players[this.jika[3]] = "game"
 
+        this.updateJunhai()
         this.onTsumo(0)
-    }
-
-    /**
-     * 別局開始
-     */
-    public restart(): void{
-        //
-        super.restart()
     }
 
     /**
@@ -294,10 +302,25 @@ export class Game4 extends GameBase implements Game {
      * @returns true | false
      */
     public quit(socketId: string): boolean{
-        if(this.gameStatus !== "wait") return false
+        if(this.gameStatus === "game") return false
         super.quit(socketId)
         delete this.players[socketId]
         if(Object.keys(this.players).length === 0){
+            this.server.deleteRoom(this.roomId)
+        }
+
+        //残りがAIのみなら即部屋削除
+        let i = 0
+        for(let name of Object.keys(this.players)){
+            if(name[0]+name[1]+name[2] === "AI-"){
+                i++
+            }
+        }
+        if(i === Object.keys(this.players).length){
+            for(let name of Object.keys(this.players)){
+                this.server.deletePlayer(name)
+                this.server.deleteUser(name)
+            }
             this.server.deleteRoom(this.roomId)
         }
         return true
@@ -313,13 +336,34 @@ export class Game4 extends GameBase implements Game {
             this.quit(socketId)
         else
             this.players[socketId] = "dead"
+
+        //残りがAIのみなら即部屋削除
+        let p = Object.keys(this.players).slice()
+        p.splice(p.indexOf(socketId), 1)
+        let j = 0
+        for(let name of p){
+            if(name[0]+name[1]+name[2] === "AI-"){
+                j++
+            }
+        }
+        if(j === p.length){
+            for(let name of p){
+                this.server.deletePlayer(name)
+                this.server.deleteUser(name)
+                if(this.gameStatus !== "game")
+                    this.quit(name)
+                else
+                    this.players[name] = "dead"
+            }
+        }
+
         let i = 0
         for(const [socketId, status] of Object.entries(this.players)){
             if(status === "dead")
                 i++
         }
-        if(i !== 4) return
-        this.server.deleteRoom(this.roomId)
+        const length = Object.entries(this.players).length
+        if(i === length) this.server.deleteRoom(this.roomId)
     }
 
     /**
@@ -360,11 +404,12 @@ export class Game4 extends GameBase implements Game {
      */
     public reset(): void{
         super.reset()
-        this.server.getProtocol().emitArray("resetRoom", Object.keys(this.players), {"protocol": "resetRoom"})
         this.gameStatus = "wait"
         for(let [str, status] of Object.entries(this.players)){
             status = "wait"
         }
+
+        this.firstTime = true
 
         this.clearAllTimer()
         this.timer = {}
@@ -468,15 +513,14 @@ export class Game4 extends GameBase implements Game {
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
 
-        const richiHai = Shanten.getHai(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, param)
-        //待ち牌から立直可能牌を求める処理をShantenに記述
+        const richiHai = Shanten.getHai(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, null, param)
 
         let tehai = this.tehai[kaze]["hai"].slice()
         tehai = tehai.concat(tsumoHai)
         let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null, "data": {}}}
         if(this.richi[kaze]["bool"]) result["dahai"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
 
-        if(richiHai !== null && this.richi[kaze]["bool"] === false){
+        if(Object.keys(richiHai).length !== 0 && this.richi[kaze]["bool"] === false && Object.keys(this.furo[kaze]).length <= 0){
             let richiHais: number[] = []
             for(let hai of Object.keys(richiHai)){
                 richiHais.push(Number(hai))
@@ -484,8 +528,8 @@ export class Game4 extends GameBase implements Game {
             result["richi"] = {"hai": richiHais, "combi": [], "from": null, "data": richiHai}
         }
 
-        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
-        if(hora.yakuhai.length !== 0){
+        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, null, param)
+        if(Object.keys(hora.yakuhai).length !== 0){
             result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
         }
 
@@ -568,7 +612,12 @@ export class Game4 extends GameBase implements Game {
                             }
                         }
                 }
-        }    
+        }
+
+        //流局の位置確認
+        if(this.dorahai.dora["enable"].length === 5){
+            this.onRyukyoku("四槓散了")
+        }
 
         if(i === 0){
             if(this.kaze === 3) this.kaze = 0
@@ -633,7 +682,7 @@ export class Game4 extends GameBase implements Game {
 
             const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], dahaiHai, ronhai, param)
             let pre_result: Types.wait_res = {}
-            if(hora.yakuhai.length !== 0){
+            if(Object.keys(hora.yakuhai).length !== 0){
                 pre_result["hora"] = {"hai": [dahaiHai], "combi": [], "from": kaze, "data": {}}
             }
 
@@ -917,14 +966,22 @@ export class Game4 extends GameBase implements Game {
     public onKantsumo(kaze: Types.kaze_number): void{
         super.onKantsumo(kaze)
 
-        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
         //他家の行動待ち(搶槓)
         this.event = "kantsumo"
         this.resetRes()
 
+        const nh = this.yamahai.tsumo.hai.splice(this.yamahai.tsumo.hai.length - 1, 1)[0]
+        this.yamahai["rinshan"]["hai"].push(nh)
+
+        const length = this.dorahai["dora"]["enable"].length
+        const dora = this.dorahai["dora"]["hai"][length]
+        this.dorahai["dora"]["enable"].push(dora)
+
+        this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
+
         //四槓散了は打牌後？
 
-        const tsumoHai = this.yamahai["rinshan"]["hai"].splice(1, 2)[0]
+        const tsumoHai = this.yamahai["rinshan"]["hai"].splice(0, 1)[0]
         this.tsumo[kaze] = tsumoHai
 
         this.updateJunhai()
@@ -958,11 +1015,26 @@ export class Game4 extends GameBase implements Game {
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
-        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
+
+        const richiHai = Shanten.getHai(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, null, param)
+        
         const tehai = this.tehai[kaze]["hai"].slice()
         tehai.push(tsumoHai)
+
         let result: Types.wait_res = {"dahai": {"hai": tehai, "combi": [], "from": null, "data": {}}}
-        if(hora.yakuhai.length !== 0){
+
+        if(this.richi[kaze]["bool"]) result["dahai"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
+
+        if(Object.keys(richiHai).length !== 0 && this.richi[kaze]["bool"] === false && Object.keys(this.furo[kaze]).length <= 0){
+            let richiHais: number[] = []
+            for(let hai of Object.keys(richiHai)){
+                richiHais.push(Number(hai))
+            }
+            result["richi"] = {"hai": richiHais, "combi": [], "from": null, "data": richiHai}
+        }
+
+        const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], tsumoHai, tsumoHai, param)
+        if(Object.keys(hora.yakuhai).length !== 0){
             result["hora"] = {"hai": [tsumoHai], "combi": [], "from": null, "data": {}}
         }
 
@@ -993,35 +1065,45 @@ export class Game4 extends GameBase implements Game {
         const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 2 : 0
         const tenho = (this.yamahai["tsumo"]["hai"].length === 69)? 2 : 0
 
+        if(this.richi[kaze]["bool"]){
+            const length = this.dorahai.dora["enable"].length
+            for(let i = 0; i <= length - 1; i++){
+                this.dorahai.uradora["enable"].push(this.dorahai.uradora["hai"][i])
+            }
+        }
+
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
             false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
 
-        let horaHai = _horaHai
+        let horaHai: number | null = _horaHai
         let i = 0
-        switch(kaze){
-            case 0:
-                if(this.kaze === 1) i = 1
-                else if(this.kaze === 2) i = 2
-                else if(this.kaze === 3) i = 3
-                break;
-            case 1:
-                if(this.kaze === 0) i = 3
-                else if(this.kaze === 2) i = 1
-                else if(this.kaze === 3) i = 2
-                break;
-            case 2:
-                if(this.kaze === 1) i = 3
-                else if(this.kaze === 0) i = 2
-                else if(this.kaze === 3) i = 1
-                break;
-            case 3:
-                if(this.kaze === 1) i = 2
-                else if(this.kaze === 2) i = 3
-                else if(this.kaze === 0) i = 1
-                break;
+        if(this.event === "dahai"){
+            switch(kaze){
+                case 0:
+                    if(this.kaze === 1) i = 1
+                    else if(this.kaze === 2) i = 2
+                    else if(this.kaze === 3) i = 3
+                    break;
+                case 1:
+                    if(this.kaze === 0) i = 3
+                    else if(this.kaze === 2) i = 1
+                    else if(this.kaze === 3) i = 2
+                    break;
+                case 2:
+                    if(this.kaze === 1) i = 3
+                    else if(this.kaze === 0) i = 2
+                    else if(this.kaze === 3) i = 1
+                    break;
+                case 3:
+                    if(this.kaze === 1) i = 2
+                    else if(this.kaze === 2) i = 3
+                    else if(this.kaze === 0) i = 1
+                    break;
+            }
         }
         horaHai = horaHai + i
+        if(i === 0) horaHai = null
 
         const hora = Hora.hora(this.tehai[kaze]["hai"], this.furo[kaze], this.junhai[kaze], _horaHai, horaHai, param)
 
@@ -1040,7 +1122,7 @@ export class Game4 extends GameBase implements Game {
         }
 
         //todo
-        this.reset()
+        this.onEnd([kaze], hora.bumpai) //ダブロンなどの場合も考える
         return true;
     }
 
@@ -1061,7 +1143,7 @@ export class Game4 extends GameBase implements Game {
         super.onRyukyokuByPlayer(kaze, type)
         //TODO
         this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type})
-        this.reset()
+        this.onEnd(null, [0,0,0,0]) //下に同様
         return true;
     }
 
@@ -1070,7 +1152,7 @@ export class Game4 extends GameBase implements Game {
         super.onRyukyoku(type)
         //TODO
         this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type})
-        this.reset()
+        this.onEnd(null, [0,0,0,0]) //聴牌の可能性も考える
         return;
     }
 
@@ -1092,14 +1174,116 @@ export class Game4 extends GameBase implements Game {
         return true
     }
 
-    public onEnd(){
-        super.onEnd()
-        //TODO
+    //一局終了
+    public onEnd(hora: Types.kaze_number[] | null, point: number[]){
+        super.onEnd(hora, point)
+
+        this.clearAllTimer()
+        this.timer = {}
+
+        this.yamahai = {"rinshan": {"hai": []}, "tsumo": {"hai": []}}
+        this.dorahai = {"dora": {"hai": [], "enable": []}, "uradora": {"hai": [], "enable": []}}
+        this.tehai = {
+            0: {"hai": [], "sute": []}, 
+            1: {"hai": [], "sute": []}, 
+            2: {"hai": [], "sute": []}, 
+            3: {"hai": [], "sute": []}
+        }
+        this.junhai = {
+            0: {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}, 
+            1: {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}, 
+            2: {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}, 
+            3: {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}
+        }
+        this.furo = {0: [], 1: [], 2: [], 3: []}
+        this.tsumo = {0: null, 1: null, 2: null, 3: null}
+
+        this.kui = {0: false, 1: false, 2: false, 3: false}
+        this.kan = {0: false, 1: false, 2: false, 3: false}
+        this.richi = {
+            0: {"bool": false, "double": false, "ippatu": false}, 
+            1: {"bool": false, "double": false, "ippatu": false}, 
+            2: {"bool": false, "double": false, "ippatu": false}, 
+            3: {"bool": false, "double": false, "ippatu": false}}
+
+        this.kaze = 0
+        this.waitRes = {}
+        this.suteCache = {0: null, 1: null, 2: null, 3: null}
+
+        this.point[0] += point[0]
+        this.point[1] += point[1]
+        this.point[2] += point[2]
+        this.point[3] += point[3]
+
+        //終局判定をしてtrueなら終局へ
+        for(let [s,p] of Object.entries(this.point)){
+            if(p <= 0){
+                this.onShukyoku()
+                return
+            }
+        }
+
+        if(hora !== null){
+            if(hora.includes(0)){
+                if(this.point[0] >= 35000 && this.info.bakaze === 1 && this.info.kyoku === 4){ //終局点数は弄れるようにする。
+                    this.onShukyoku()       //終局判定をしてtrueなら終局へ
+                    return
+                }
+                this.info = {"bakaze": this.info.bakaze, "kyoku": this.info.kyoku, "homba": this.info.homba + 1, "richi": this.info.richi, "yama": 70}
+            }else{
+                if(this.info.bakaze === 1 && this.info.kyoku === 4){
+                    this.onShukyoku()
+                    return
+                }
+                //組み換え
+                const jika0 = this.jika[3].slice()
+                const jika1 = this.jika[0].slice()
+                const jika2 = this.jika[1].slice()
+                const jika3 = this.jika[2].slice()
+                this.jika[0] = jika0
+                this.jika[1] = jika1
+                this.jika[2] = jika2
+                this.jika[3] = jika3
+                const c_point = {0: this.point[0], 1: this.point[1] ,2: this.point[2], 3: this.point[3]}
+                this.point = {0: c_point[3], 1: c_point[0], 2: c_point[1], 3: c_point[2]}
+            }
+        }else{
+            if(this.info.kyoku === 4){
+                if(this.info.bakaze === 1){
+                    this.onShukyoku()
+                    return
+                }
+                this.info = {"bakaze": this.info.bakaze + 1, "kyoku": 1, "homba": 0, "richi": this.info.richi, "yama": 70}
+            }else{
+                this.info = {"bakaze": this.info.bakaze, "kyoku": this.info.kyoku + 1, "homba": 0, "richi": this.info.richi, "yama": 70}
+            }
+            //組み換え
+            const jika0 = this.jika[3].slice()
+            const jika1 = this.jika[0].slice()
+            const jika2 = this.jika[1].slice()
+            const jika3 = this.jika[2].slice()
+            this.jika[0] = jika0
+            this.jika[1] = jika1
+            this.jika[2] = jika2
+            this.jika[3] = jika3
+            const c_point = {0: this.point[0], 1: this.point[1] ,2: this.point[2], 3: this.point[3]}
+            this.point = {0: c_point[3], 1: c_point[0], 2: c_point[1], 3: c_point[2]}
+        }
+
+        this.server.getProtocol().emitArray("endRoom", Object.keys(this.players), {"protocol": "endRoom"})
+        this.firstTime = false
+        this.gameStatus = "wait"
+        for(let [str, status] of Object.entries(this.players)){
+            status = "wait"
+        }
     }
 
+    //卓終了
     public onShukyoku(){
         super.onShukyoku()
-        //TODO
+        //this.server.getProtocol().emitArray("shukyoku", Object.keys(this.players), {"protocol": "shukyoku"})
+        this.server.getProtocol().emitArray("endRoom", Object.keys(this.players), {"protocol": "endRoom"})//todo
+        this.reset()
     }
 
     private responseCheck(kaze: Types.kaze_number, protocol: string, hai: number, combi: number[] = []): boolean{
@@ -1212,5 +1396,19 @@ export class Game4 extends GameBase implements Game {
                 console.log("[Game4] detail mode is not implemented.")
                 break;
         }
+    }
+
+    public excuteAI(socketId: string, protocol: string, data: string): void{
+		this.AIPlayer.excute(socketId, protocol, data)
+    }
+
+    //todo
+    public addAI(): void{
+        var S = "abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	    var N = 17
+        var name = `AI-${Array.from(Array(N)).map(()=>S[Math.floor(Math.random()*S.length)]).join('')}`
+        this.server.addUser(name, "CPU")
+        const bool = this.join(name)
+        this.server.getProtocol().emit("joinRoom", name, {"protocol": "joinRoom", "result": bool})
     }
 }

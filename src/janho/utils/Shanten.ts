@@ -23,12 +23,13 @@
  * 
  */
 
+import { Hora } from "./Hora"
 import * as Types from "./Types"
 
 export class Shanten {
 
-    static getHai(tehai: number[], furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, param: Types.hora_info)
-    : {[key in number]: number[]} | null {
+    static getHai(tehai: number[], furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number | null, param: Types.hora_info)
+    : {[key in number]: number[]} {
 
         let result: {[key: number]: number[]} = {}
 
@@ -37,7 +38,7 @@ export class Shanten {
         _junhai_["p"] = _junhai_["p"].concat(junhai["p"])
         _junhai_["s"] = _junhai_["s"].concat(junhai["s"])
         _junhai_["j"] = _junhai_["j"].concat(junhai["j"])
-        if(this.shanten(furo, _junhai_, tsumohai) !== 0) return null
+        if(this.shanten(furo, _junhai_, tsumohai) !== 0) return {}
 
         //捨てた後のシャン点数0 = 捨て可能牌
         let _tehai = tehai.slice()
@@ -78,9 +79,11 @@ export class Shanten {
             
             if(this.shanten(furo, __junhai_, null) === 0){
                 const tenpai = this.tenpai(furo, __junhai_, null)
-                if(tenpai !== null)
-                    result[hai] = tenpai
-                    //自摸のみの場合は和了の時に判定する
+                if(tenpai !== null){
+                    if(Object.keys(Hora.hora(__tehai, furo, __junhai_, hai, ronhai, param).yakuhai).length !== 0){
+                        result[hai] = tenpai
+                    }
+                }
             }
         }
         return result
@@ -312,7 +315,7 @@ export class Shanten {
         return 13 - mentsu * 3 - tatsu * 2 - koritsu
     }
 
-    private static tenpai(
+    public static tenpai(
         furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumo: number[] | number | null
     ): number[] | null{
 

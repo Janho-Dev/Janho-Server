@@ -50,10 +50,13 @@ import {Chi} from "./game/Chi"
 import {Pon} from "./game/Pon"
 import {Ankan} from "./game/Ankan"
 import {Kakan} from "./game/Kakan"
-import {ResetRoom} from "./room/ResetRoom"
+import {EndRoom} from "./room/EndRoom"
 import {RoomUpdate} from "./room/RoomUpdate"
 import {Turn} from "./game/Turn"
 import {Richi} from "./game/Richi"
+import {AI} from "./game/AI"
+import {AddAI} from "./room/AddAI"
+import {Info} from "./game/Info"
 
 
 export class Protocol {
@@ -72,9 +75,11 @@ export class Protocol {
             "readyRoom": new ReadyRoom(this.server),
             "quitRoom": new QuitRoom(this.server),
             "startRoom": new StartRoom(this.server),
-            "resetRoom": new ResetRoom(this.server),
+            "endRoom": new EndRoom(this.server),
             "roomUpdate": new RoomUpdate(this.server),
+            "addAI": new AddAI(this.server),
 
+            "ai": new AI(this.server),
             "kaikyoku": new Kaikyoku(this.server),
             "haipai": new Haipai(this.server),
             "tsumo": new Tsumo(this.server),
@@ -91,7 +96,8 @@ export class Protocol {
             "ankan": new Ankan(this.server),
             "kakan": new Kakan(this.server),
             "turn": new Turn(this.server),
-            "richi": new Richi(this.server)
+            "richi": new Richi(this.server),
+            "info": new Info(this.server)
         }
     }
 
@@ -118,7 +124,10 @@ export class Protocol {
     public emit(protocolName: string, socketId: string, json: {}): void{
         const protocol = this.getProtocol(protocolName)
         if(protocol !== null){
-            protocol.procEmit(socketId, json)
+            if(socketId[0]+socketId[1]+socketId[2] === "AI-")
+                this.aiReceive(socketId, JSON.stringify(json))
+            else
+                protocol.procEmit(socketId, json)
         }
     }
 
@@ -148,7 +157,10 @@ export class Protocol {
         const protocol = this.getProtocol(protocolName)
         if(protocol !== null){
             socketIds.forEach((socketId) => {
-                protocol.procEmit(socketId, json)
+                if(socketId[0]+socketId[1]+socketId[2] === "AI-")
+                    this.aiReceive(socketId, JSON.stringify(json))
+                else
+                    protocol.procEmit(socketId, json)
             })
         }
     }
@@ -163,5 +175,12 @@ export class Protocol {
             return this.protocols[protocol]
         else
             return null
+    }
+
+    private aiReceive(socketId: string, data: string): void{
+        const protocol = this.getProtocol("ai")
+        if(protocol !== null){
+            protocol.procReceive(socketId, data)
+        }
     }
 }

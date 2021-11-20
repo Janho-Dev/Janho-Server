@@ -69,7 +69,6 @@ export class Event{
     private readonly _playerReadyEvent: EventPort<(roomId: string, socketId: string, bool: boolean) => void>
     private readonly _playerLoadedEvent: EventPort<(roomId: string, socketId: string) => void>
     private readonly _gameStartEvent: EventPort<(roomId: string) => void>
-    private readonly _gameRestartEvent: EventPort<(roomId: string) => void>
     private readonly _playerQuitEvent: EventPort<(roomId: string, socketId: string) => void>
     private readonly _playerDeadEvent: EventPort<(roomId: string, socketId: string) => void>
     private readonly _gameResetEvent: EventPort<(roomId: string) => void>
@@ -133,7 +132,6 @@ export class Event{
         this._playerReadyEvent = new EventPort("playerReady", this.emitter)
         this._playerLoadedEvent = new EventPort("playerLoaded", this.emitter)
         this._gameStartEvent = new EventPort("gameStart", this.emitter)
-        this._gameRestartEvent = new EventPort("gameRestart", this.emitter)
         this._playerQuitEvent = new EventPort("playerQuit", this.emitter)
         this._playerDeadEvent = new EventPort("playerDead", this.emitter)
         this._gameResetEvent = new EventPort("gameReset", this.emitter)
@@ -287,10 +285,6 @@ export class Event{
     public get gameStartEvent() { return this._gameStartEvent }
     public gameStart(roomId: string): boolean{
         return this.emitter.emit(this._gameStartEvent, roomId)
-    }
-    public get gameRestartEvent() { return this._gameRestartEvent }
-    public gameRestart(roomId: string): boolean{
-        return this.emitter.emit(this._gameRestartEvent, roomId)
     }
     public get playerQuitEvent() { return this._playerQuitEvent }
     public playerQuit(roomId: string, socketId: string): boolean{

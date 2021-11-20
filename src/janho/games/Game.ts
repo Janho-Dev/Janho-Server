@@ -30,7 +30,6 @@ export interface Game {
     ready(socketId: string, bool: boolean): boolean
     loaded(socketId: string): boolean
     start(): void
-    restart(): void
     quit(socketId: string): boolean
     dead(socketId: string): void
     setTimer(socketId: string, json: {}): void
@@ -50,8 +49,10 @@ export interface Game {
     onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku): boolean
     onRyukyoku(type: Types.ryukyoku): void
     onSkip(kaze: Types.kaze_number): boolean
-    onEnd(): void
+    onEnd(hora: Types.kaze_number[] | null, point: number[]): void
     onShukyoku(): void
     dataDump(option: "all"|"simple"|"detail"): void
     sendPlayers(socketId: string): void
+    excuteAI(socketId: string, protocol: string, data: string): void
+    addAI(): void
 }
