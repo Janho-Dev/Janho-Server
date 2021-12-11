@@ -47,7 +47,7 @@ export class Chi implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onChi(kaze, parsed["hai"], parsed["combi"])
+                        const result = room.onChi(kaze, parsed["hai"], parsed["combi"], false)
                         if(!result) this.procEmit(socketId, {"protocol": "chi", "result": false})
                         //return true --> Game::onChi()
                     }

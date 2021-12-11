@@ -34,24 +34,13 @@ export class CreateRoom implements JanhoProtocol {
     }
 
     public procReceive(socketId: string, data: string): void{
-        /*
-        if(this.server.isPlayer(socketId)){
-            const roomId = this.server.getPlayerRoomId(socketId)
-            if(roomId !== null){
-                if(this.server.isRoom(roomId))
-                    return
-            }
-        }
-        */
         if(!this.server.isUser(socketId)) return
         const parsed = JSON.parse(data)
         if("roomId" in parsed){
             if(typeof parsed["roomId"] === "string"){
-                //if(!(this.server.isRoom(parsed["roomId"]))){
-                    const result = this.server.addRoom(parsed["roomId"], socketId)
-                    if(result) this.procEmit(socketId, {"protocol": "createRoom", "result": true})
-                    else this.procEmit(socketId, {"protocol": "createRoom", "result": false})
-                //}
+                const result = this.server.addRoom(parsed["roomId"], socketId)
+                if(result) this.procEmit(socketId, {"protocol": "createRoom", "result": true})
+                else this.procEmit(socketId, {"protocol": "createRoom", "result": false})
             }
         }
     }

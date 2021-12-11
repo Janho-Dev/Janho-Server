@@ -26,7 +26,6 @@
 import * as janho from "../../Server"
 import {DefaultCommand} from "./DefaultCommand"
 import {Game} from "../../games/Game"
-import { isThisTypeNode } from "typescript"
 
 export class MonitorCommand implements DefaultCommand {
     private readonly server: janho.Server
@@ -37,8 +36,8 @@ export class MonitorCommand implements DefaultCommand {
 
     constructor(server: janho.Server){
         this.server = server
-        this.description = ""
-        this.usage = ""
+        this.description = "Displays the contents of variables in the target room."
+        this.usage = "show <roomId> [all/simple/detail]"
         this.room = null
         this.option = "simple"
         this.server.getEvent().gameEvent.on(() => {

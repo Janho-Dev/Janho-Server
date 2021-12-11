@@ -34,7 +34,7 @@ export class GetUsersCommand implements DefaultCommand {
     constructor(server: janho.Server){
         this.server = server
         this.description = "Display a list of connected clients."
-        this.usage = "getusers"
+        this.usage = "users"
     }
 
     public execute(args: string[]){

@@ -44,9 +44,9 @@ export class Command {
         this.server = server
         this.commands = {
             "debug": new DebugCommand(this.server),
-            "getplayers": new GetPlayersCommand(this.server),
-            "getrooms": new GetRoomsCommand(this.server),
-            "getusers": new GetUsersCommand(this.server),
+            "players": new GetPlayersCommand(this.server),
+            "rooms": new GetRoomsCommand(this.server),
+            "users": new GetUsersCommand(this.server),
             "help": new HelpCommand(this.server, this),
             "status": new StatusCommand(this.server),
             "stop": new StopCommand(),

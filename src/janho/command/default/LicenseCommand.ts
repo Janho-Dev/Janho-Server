@@ -38,7 +38,7 @@ export class LicenseCommand implements DefaultCommand {
 
     constructor(server: janho.Server){
         this.server = server
-        this.description = ""
+        this.description = "Show license."
         this.usage = "license [list]"
         this.csv_path = path.resolve(__dirname, "..", "..", "resource", "Licenses.csv")
     }

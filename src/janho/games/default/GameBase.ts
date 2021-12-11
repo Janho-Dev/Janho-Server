@@ -84,13 +84,13 @@ export abstract class GameBase{
     public onDahai(kaze: kaze_number, dahaiHai: number, isRichi: boolean){
         new DahaiEvent(this.server.getEvent(), this.roomId, kaze, dahaiHai, isRichi).emit()
     }
-    public onPon(kaze: kaze_number, furoHai: number, combi: number[]){
+    public onPon(kaze: kaze_number, furoHai: number, combi: number[], isCached: boolean){
         new PonEvent(this.server.getEvent(), this.roomId, kaze, furoHai, combi).emit()
     }
-    public onChi(kaze: kaze_number, furoHai: number, combi: number[]){
+    public onChi(kaze: kaze_number, furoHai: number, combi: number[], isCached: boolean){
         new ChiEvent(this.server.getEvent(), this.roomId, kaze, furoHai, combi).emit()
     }
-    public onKan(kaze: kaze_number, kanHai: number, combi: number[]){
+    public onKan(kaze: kaze_number, kanHai: number, combi: number[], isCached: boolean){
         new KanEvent(this.server.getEvent(), this.roomId, kaze, kanHai, combi).emit()
     }
     public onAnkan(kaze: kaze_number, kanHai: number, combi: number[]){
@@ -102,7 +102,7 @@ export abstract class GameBase{
     public onKantsumo(kaze: kaze_number){
         new KantsumoEvent(this.server.getEvent(), this.roomId, kaze).emit()
     }
-    public onHora(kaze: kaze_number, horaHai: number){
+    public onHora(kaze: kaze_number, horaHai: number, isCached: boolean){
         new HoraEvent(this.server.getEvent(), this.roomId, kaze, horaHai).emit()
     }
     public onRichi(kaze: kaze_number, richiHai: number){

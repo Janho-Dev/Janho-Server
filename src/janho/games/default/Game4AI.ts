@@ -72,7 +72,11 @@ export class Game4AI {
                 break
 
             case "endRoom":
-                this.parent.ready(socketId, true)
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        this.parent.loaded(socketId)
+                    }, 1)
+                })
                 break
         }
     }

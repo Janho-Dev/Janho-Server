@@ -43,7 +43,7 @@ export class Hora implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onHora(kaze, parsed["hai"])
+                        const result = room.onHora(kaze, parsed["hai"], false)
                         if(!result) this.procEmit(socketId, {"protocol": "hora", "result": false})
                         //return true --> Game::onHora()
                     }

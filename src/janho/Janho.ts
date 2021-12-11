@@ -134,7 +134,6 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
 //メイン関数
 async function execute(){
     //JSONファイルを読み込み
-    //TODO: JSON更新の処理
     const data = {"server": {"port": 3000,"enable-https": false,"key": "","cert": ""}}
     const pt = path.resolve(__dirname, "..", "..", "janho.json")
     if(!fs.existsSync(pt)){

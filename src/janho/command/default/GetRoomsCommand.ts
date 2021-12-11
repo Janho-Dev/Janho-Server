@@ -34,7 +34,7 @@ export class GetRoomsCommand implements DefaultCommand {
     constructor(server: janho.Server){
         this.server = server
         this.description = "Display a list of mahjong rooms."
-        this.usage = "getrooms"
+        this.usage = "rooms"
     }
 
     public execute(args: string[]){

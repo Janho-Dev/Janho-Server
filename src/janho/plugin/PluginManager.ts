@@ -119,12 +119,12 @@ export class PluginManager {
                     const keys = ["name", "main", "version", "serverVersion", "author", "description"]
                     for(let key of keys){
                         if(!(key in json)){
-                            this.server.getLogger().log("error", `${key} not found`)//todo
+                            this.server.getLogger().log("error", `${key} not found`)
                             return
                         }
                     }
                     if(pre_names.includes(json.name)){
-                        this.server.getLogger().log("error", `${json.name} already`)//todo
+                        this.server.getLogger().log("error", `${json.name} already`)
                         return
                     }
                     if(json.serverVersion !== VersionInfo.VERSION && json.serverVersion !== "all"){
@@ -151,7 +151,7 @@ export class PluginManager {
                     this.plugins[json.name.toLowerCase()]["class"].onEnable()
                     new PluginEnableEvent(this.server.getEvent(), json.name, json).emit()
                 }else{
-                    this.server.getLogger().log("error", "Error!")//todo
+                    this.server.getLogger().log("error", "Unexpected Error")
                 }
             }
         }catch(err){

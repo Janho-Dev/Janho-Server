@@ -47,7 +47,7 @@ export class Pon implements JanhoProtocol {
                     if(room !== null){
                         const kaze = room.getKaze(socketId)
                         if(kaze === null) return
-                        const result = room.onPon(kaze, parsed["hai"], parsed["combi"])
+                        const result = room.onPon(kaze, parsed["hai"], parsed["combi"], false)
                         if(!result) this.procEmit(socketId, {"protocol": "pon", "result": false})
                         //return true --> Game::onPon()
                     }
