@@ -243,14 +243,9 @@ export class Game4 extends GameBase implements Game {
         this.dorahai["uradora"]["hai"] = hai["uradora"]
         this.yamahai["tsumo"]["hai"] = hai["tsumo"]
         this.tehai[3]["hai"] = this.haiSort(hai["pei"])
-        //this.tehai[2]["hai"] = this.haiSort(hai["sha"])
-        this.tehai[2]["hai"] = [110,110,120,130,170,180,190,210,220,230,270,280,290]
-        //this.tehai[1]["hai"] = this.haiSort(hai["nan"])
-        this.tehai[1]["hai"] = [110,110,130,140,150,160,210,220,230,240,250,260,250]
-        //this.tehai[0]["hai"] = this.haiSort(hai["ton"])
-        //this.tehai[0]["hai"] = [110,190,210,290,310,390,410,420,430,440,450,460,470] //緑一色問題
-        //this.tehai[0]["hai"] = [110,110,110,120,120,120,130,130,130,140,150,160,430] //訳無し問題
-        this.tehai[0]["hai"] = [110,110,120,130,140,150,160,210,220,230,240,250,260]
+        this.tehai[2]["hai"] = this.haiSort(hai["sha"])
+        this.tehai[1]["hai"] = this.haiSort(hai["nan"])
+        this.tehai[0]["hai"] = this.haiSort(hai["ton"])
 
         const dora = this.dorahai["dora"]["hai"][0]
         this.dorahai["dora"]["enable"].push(dora)
