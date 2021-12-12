@@ -80,9 +80,7 @@ export class Shanten {
             if(this.shanten(furo, __junhai_, null) === 0){
                 const tenpai = this.tenpai(furo, __junhai_, null)
                 if(tenpai !== null){
-                    if(Object.keys(Hora.hora(__tehai, furo, __junhai_, hai, ronhai, param).yakuhai).length !== 0){
-                        result[hai] = tenpai
-                    }
+                    result[hai] = tenpai
                 }
             }
         }

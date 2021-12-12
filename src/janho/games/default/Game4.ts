@@ -25,17 +25,10 @@
 
 /**
  * 未実装項目
+ * ・流局後のノーテン罰符追加
  * ・流局 "四家立直" "三家和" "九種九牌"
- * ・チャンカン
+ * ・チャンカン、加槓修正
  * ・ダブロン以上に対応させる(今は単独ロンを複数送信してしまう)
- * ・天和にならない
- * ・アガリ時緑一色などおかしな結果が出る
- * ・親流れおかしい
- * 
- * ・和了れる形なのに和了できない[三暗刻のみなど]
- * ・skipに関するバグあり
- * ・途中復帰できない
- * ・重複部分のリファクタリング
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
@@ -513,7 +506,7 @@ export class Game4 extends GameBase implements Game {
 
         const richi = this.richi[kaze]
         const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 1 : 0
-        const tenho = (this.yamahai["tsumo"]["hai"]. length === 69)? 1 : 0
+        const tenho = (this.tehai[kaze].sute.length === 0)? 1 : 0
 
         const param = Hora.get_param(
             bakaze, kaze, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
@@ -1108,8 +1101,12 @@ export class Game4 extends GameBase implements Game {
         else bakaze = 3
 
         const richi = this.richi[kaze]
-        const haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 2 : 0
-        const tenho = (this.yamahai["tsumo"]["hai"].length === 69)? 2 : 0
+        let haitei: Types.hora_number = (this.yamahai["tsumo"]["hai"].length === 0)? 2 : 0
+        let tenho: Types.hora_number = (this.tehai[kaze].sute.length === 0)? 2 : 0
+        if(this.kaze === kaze){
+            haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 1 : 0
+            tenho = (this.tehai[kaze].sute.length === 0)? 1 : 0
+        }
 
         if(this.richi[kaze]["bool"]){
             const length = this.dorahai.dora["enable"].length

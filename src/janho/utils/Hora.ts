@@ -120,12 +120,10 @@ export class Hora {
 
         if(Shanten.shanten(furo, junhai, tsumohai) <= 0){
             const tp = Shanten.tenpai(furo, junhai, null)
-            if(tp !== null){
-                if(!tp.includes(tsumohai)) return max
-            }else{
+            if(tp === null){
                 return max
             }
-        }else  return max
+        }else return max
         
         if(typeof tsumohai === "number"){
             const s = Math.floor(tsumohai / 100) % 10
@@ -155,7 +153,7 @@ export class Hora {
         for(let p of furo){
             allfuro = allfuro.concat(p)
         }
-        const alltehai = tehai.concat(allfuro)
+        const alltehai = tehai.concat(tsumohai).concat(allfuro)
         let post_yakuhai = this.get_post_yakuhai(alltehai, param.dora, param.uradora)
 
         for(let mentsu of this.hora_mentsu(furo, junhai, tsumohai, ronhai)){
@@ -304,9 +302,9 @@ export class Hora {
         return post_yakuhai
     }
 
-    private static get_yakuhai(mentsu: number[][], hudi: Types.hudi, pre_yakuhai: Types.yakuhai, post_yakuhai: Types.yakuhai): Types.yakuhai{
+    private static get_yakuhai(mentsu: string[], hudi: Types.hudi, pre_yakuhai: Types.yakuhai, post_yakuhai: Types.yakuhai): Types.yakuhai{
         
-        const str_mentsu = this.toStrMentsu(mentsu)
+        const str_mentsu = mentsu
 
         let yakuman: Types.yakuhai = (pre_yakuhai.length > 0 && (pre_yakuhai[0].hansu == "*" || pre_yakuhai[0].hansu == "**"))
                                         ? pre_yakuhai : []
@@ -584,9 +582,9 @@ export class Hora {
         return pre_yakuhai
     }
 
-    private static get_hudi(mentsu: number[][], bakaze: Types.kaze_number, jikaze: Types.kaze_number): Types.hudi{
+    private static get_hudi(mentsu: string[], bakaze: Types.kaze_number, jikaze: Types.kaze_number): Types.hudi{
 
-        const str_mentsu = this.toStrMentsu(mentsu)
+        const str_mentsu = mentsu
 
         const re_tsumo = /[\+\=\-]\!/
         const re_menzen = /[\+\=\-](?!\!)/
@@ -699,8 +697,8 @@ export class Hora {
         return hudi
     }
 
-    private static hora_mentsu(furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number | number[], ronhai: number | null): number[][][]{
-        let mentsu: number[][][] = []
+    private static hora_mentsu(furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number | number[], ronhai: number | null): string[][]{
+        let mentsu: string[][] = []
         
         if(!tsumohai) return []
         if(Array.isArray(tsumohai)){
@@ -727,36 +725,37 @@ export class Hora {
         .concat(this.hora_mentsu_churen(furo, junhai, horahai))
     }
 
-    private static hora_mentsu_churen(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): number[][][]{
+    private static hora_mentsu_churen(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
 
-        let s = Math.floor(horahai / 100) % 10
-        if(s == 4) return []
+        let s = this.toStrMentsu([[horahai]])[0][0]
+        if (s == 'j') return []
 
-        let mentsu: number[] = []
-        let junhai: number[] = []
-        if(s == 3) junhai = _junhai["s"]
-        else if(s == 2) junhai = _junhai["p"]
-        else if(s == 1) junhai = _junhai["m"]
+        let mentsu = s
+        let junhai:number[] = []
+        if(s == "s") junhai = _junhai["s"]
+        else if(s == "p") junhai = _junhai["p"]
+        else if(s == "m") junhai = _junhai["m"]
         if(junhai == []) return []
 
-        for(let n = 1; n <= 9; n++){
-            if((n == 1 || n == 9) && junhai[n] < 3) return []
-            if(junhai[n] == 0) return []
-            let n_hai = (n == Math.floor(horahai / 10) % 10) ? junhai[n] - 1 : junhai[n]
-            for(let i = 0; i < n_hai; i++){
-                mentsu.push((n * 10) + (s * 100))
+        for (let n = 1; n <= 9; n++) {
+            if ((n == 1 || n == 9) && junhai[n] < 3) return []
+            if (junhai[n] == 0) return []
+            let n_pai = (n == Number(this.toStrMentsu([[horahai]])[0][1])) ? junhai[n] - 1 : junhai[n]
+            for (let i = 0; i < n_pai; i++) {
+                mentsu += n
             }
         }
-        if(mentsu.length != 13) return []
-        mentsu.push(horahai + 1000)
+        if (mentsu.length != 14) return []
+        mentsu += this.toStrMentsu([[horahai]])[0].substring(1) + '!'
+
         return [[mentsu]]
     }
 
-    private static hora_mentsu_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): number[][][]{
+    private static hora_mentsu_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
 
-        let mentsu: number[][][] = [[]]
+        let mentsu: string[][] = [[]]
         let n_toitsu = 0
 
         for(const [s, junhai] of Object.entries(_junhai)){
@@ -768,16 +767,16 @@ export class Hora {
             let nn = (s == "j") ? [1,2,3,4,5,6,7] : [1,9]
             for(let n of nn){
                 if(junhai[n] == 2){
-                    let m: number[] = (n == Math.floor(horahai / 10) % 10) 
-                        ? [(sn * 100) + (n * 10), (sn * 100) + (n * 10) + 1000]
-                        : [(sn * 100) + (n * 10), (sn * 100) + (n * 10)]
+                    let m: string = (n == Math.floor(horahai / 10) % 10) 
+                        ? s+n+n + this.toStrMentsu([[horahai]])[0][2] + '!'
+                        : s+n+n
                     mentsu[0].unshift(m)
                     n_toitsu++
                 }
                 else if(junhai[n] == 1){
-                    let m: number[] = (n == Math.floor(horahai / 10) % 10)
-                        ? [(sn * 100) + (n * 10) + 1000]
-                        : [(sn * 100) + (n * 10)]
+                    let m: string = (n == Math.floor(horahai / 10) % 10)
+                        ? s+n + this.toStrMentsu([[horahai]])[0][2] + '!'
+                        : s+n
                     mentsu[0] = mentsu[0].concat(m)
                 }
                 else return[]
@@ -786,10 +785,10 @@ export class Hora {
         return (n_toitsu == 1) ? mentsu : []
     }
 
-    private static hora_mentsu_chitoi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): number[][][]{
+    private static hora_mentsu_chitoi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
         
-        let mentsu: number[][][] = [[]]
+        let mentsu: string[][] = [[]]
 
         for(const [s, junhai] of Object.entries(_junhai)){
             let sn
@@ -800,9 +799,9 @@ export class Hora {
             for(let n = 1; n < junhai.length; n++){
                 if(junhai[n] == 0) continue
                 if(junhai[n] == 2){
-                    let m: number[] = (n == Math.floor(horahai / 10) % 10)
-                        ? [(sn * 100) + (n * 10), (sn * 100) + (n * 10) + 1000]
-                        : [(sn * 100) + (n * 10), (sn * 100) + (n * 10)]
+                    let m: string = (n == Math.floor(horahai / 10) % 10)
+                        ? s+n+n + this.toStrMentsu([[horahai]])[0][2] + '!'
+                        : s+n+n
                     mentsu[0].push(m)
                 }
                 else return []
@@ -811,8 +810,8 @@ export class Hora {
         return (mentsu[0].length == 7) ? mentsu : []
     }
 
-    private static hora_mentsu_ippan(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): number[][][]{
-        let mentsu: number[][][] = []
+    private static hora_mentsu_ippan(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
+        let mentsu: string[][] = []
 
         for(const [s, junhai] of Object.entries(_junhai)){
             let sn
@@ -823,11 +822,11 @@ export class Hora {
             for(let n = 1; n < junhai.length; n++){
                 if(junhai[n] < 2) continue
                 junhai[n] -= 2
-                let jantohai: number[] = [(sn * 100) + (n * 10), (sn * 100) + (n * 10)]
+                let jantohai: string = s+n+n
                 for(let mm of this.mentsu_all(furo, _junhai)){
                     mm.unshift(jantohai)
                     if(mm.length != 5) continue
-                    mentsu = mentsu.concat(this.add_horahai(mm, horahai))
+                    mentsu = mentsu.concat(this.add_horahai(mm, this.toStrMentsu([[horahai]])[0]))
                 }
                 junhai[n] += 2
             }
@@ -835,91 +834,58 @@ export class Hora {
         return mentsu
     }
 
-    private static add_horahai(mentsu: number[][], p: number): number[][][]{
-        let new_mentsu: number[][][] = []
-
-        for(let j = 0; j < mentsu.length; j++){
-            for(let i = 0; i < mentsu[j].length; i++){
-                if(Math.floor(mentsu[j][i] / 1) % 10 != 0) continue
-                if(i > 0 && mentsu[j][i] == mentsu[j][i-1]) continue
-                let m = mentsu[j][i]
-                if(Math.floor(mentsu[j][i] / 100) % 10 == Math.floor(p / 100) % 10){
-                    if(Math.floor(mentsu[j][i] / 10) % 10 == Math.floor(p / 10) % 10){
-                        m = mentsu[j][i] + 1000 + Math.floor(p / 1) % 10
-                    }
-                }
-                if(m == mentsu[j][i]) continue
-                let tmp_mentsu: number[][] = mentsu.concat()
-                tmp_mentsu[j][i] = m
-                new_mentsu.push(tmp_mentsu)
-            }
+    private static add_horahai(mentsu: string[], p: string): string[][]{
+        let [s, n, d] = p
+        let regexp   = new RegExp(`^(${s}.*${n})`)
+        let replacer = `$1${d}!`
+    
+        let new_mentsu = []
+    
+        for (let i = 0; i < mentsu.length; i++) {
+            if (mentsu[i].match(/[\+\=\-]/)) continue
+            if (i > 0 && mentsu[i] === mentsu[i-1]) continue
+            let m = mentsu[i].replace(regexp, replacer)
+            if (m === mentsu[i]) continue
+            let tmp_mentsu = mentsu.concat()
+            tmp_mentsu[i] = m
+            new_mentsu.push(tmp_mentsu)
         }
-
+    
         return new_mentsu
     }
 
-    private static mentsu_all(_furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): number[][][]{
-        let shupai_all: number[][][] = [[[]]]
-        for(const [s, junhai] of Object.entries(_junhai)){
+    private static mentsu_all(_furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): string[][]{
+        let shupai_all: string[][] = [[]]
+        for(let [s, junhai] of Object.entries(_junhai)){
             if(s == "j") continue
             let new_mentsu = []
-            let cache: number[][] = []
             for(let mm of shupai_all){
-                cache = mm
                 for(let nn of this.mentsu(s, junhai)){
-                    cache = cache.concat([nn])
+                    new_mentsu.push(mm.concat(nn))
                 }
-                new_mentsu.push(cache)
             }
             shupai_all = new_mentsu
         }
         
 
-        let jihai: number[] = []
+        let jihai: string[] = []
         for(let n = 1; n <= 7; n++){
             if(_junhai["j"][n] == 0) continue
             if(_junhai["j"][n] != 3) return []
-            jihai.push(400 + (n * 10), 400 + (n * 10), 400 + (n * 10))
+            jihai.push('j'+n+n+n)
         }
 
-        let furo: number[][] = []
-        for(let [key, value] of Object.entries(_furo)){
-            value.map(m => {
-                if(m % 100 == 0) m += 50
-            })
-            furo[Number(key)] = value
-        }
+        let furo: string[] = this.toStrMentsu(_furo).map(m => m.replace(/0/g,'5'))
         
-        let map = shupai_all.map(shupai => shupai.concat([jihai]).concat(furo))
-        if(map[0] !== undefined){
-            map = [map[0].filter(n => n.length !== 0)]
-        }
-        return map
+        return shupai_all.map(shupai => shupai.concat(jihai).concat(furo))
     }
 
-    private static mentsu(s: string, junhai: number[], n = 1): number[][]{
+    private static mentsu(s: string, junhai: number[], n = 1): string[][]{
         if(n > 9) return [[]]
 
         if(junhai[n] == 0) return this.mentsu(s, junhai, n+1)
 
-        let sn: number = 0
-        switch(s){
-            case "m":
-                sn = 100
-                break;
-            case "p":
-                sn = 200
-                break;
-            case "s":
-                sn = 300
-                break;
-            case "j":
-                sn = 400
-                break;
-        }
-        if(sn == 0) return []
-
-        let shuntsu: number[][] = []
+        let shuntsu: string[][] = []
         if(n <= 7 && junhai[n] > 0 && junhai[n+1] > 0 && junhai[n+2] > 0){
             junhai[n]--
             junhai[n+1]--
@@ -929,27 +895,21 @@ export class Hora {
             junhai[n+1]++
             junhai[n+2]++
 
-            //for(let s_mentsu of shuntsu){
-            //    s_mentsu.unshift(sn + (n * 10), sn + ((n + 1) * 10), sn + ((n + 2) * 10))
-            //}
-            shuntsu.unshift([sn + (n * 10), sn + ((n + 1) * 10), sn + ((n + 2) * 10)])
+            for(let s_mentsu of shuntsu){
+                s_mentsu.unshift(s+(n)+(n+1)+(n+2))
+            }
         }
 
-        let kotsu: number[][] = []
+        let kotsu: string[][] = []
         if(junhai[n] >= 3){
             junhai[n] -= 3
             kotsu = this.mentsu(s, junhai, n)
             junhai[n] += 3
-            //for(let k_mentsu of kotsu){
-            //    k_mentsu.unshift(sn + (n * 10), sn + (n * 10), sn + (n * 10))
-            //}
-            kotsu.unshift([sn + (n * 10), sn + (n * 10), sn + (n * 10)])
+            for(let k_mentsu of kotsu){
+                k_mentsu.unshift(s+n+n+n)
+            }
         }
-        let new_mentsu = shuntsu.concat(kotsu)
-        if(new_mentsu !== undefined){
-            new_mentsu = new_mentsu.filter(n => n.length !== 0)
-        }
-        return new_mentsu
+        return shuntsu.concat(kotsu)
     }
 
     private static shindorahai(p: number): number{
