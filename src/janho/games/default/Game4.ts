@@ -25,10 +25,9 @@
 
 /**
  * 未実装項目
- * ・流局後のノーテン罰符追加
- * ・流局 "四家立直" "三家和" "九種九牌"
- * ・チャンカン、加槓修正
  * ・ダブロン以上に対応させる(今は単独ロンを複数送信してしまう)
+ * ・流局 "四家立直" "三家和" "九種九牌" "流し満貫"
+ * ・チャンカン追加、加槓修正
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
@@ -471,6 +470,8 @@ export class Game4 extends GameBase implements Game {
         this.server.getProtocol().emitArray("turn", Object.keys(this.players), {"protocol": "turn", "kaze": kaze, "amari": this.yamahai.tsumo.hai.length})
         this.event = "tsumo"
         this.resetRes()
+        
+        if(this.gameStatus !== "game") return
 
         if(this.yamahai["tsumo"]["hai"].length === 0){
             this.onRyukyoku("荒牌平局")
@@ -1121,6 +1122,7 @@ export class Game4 extends GameBase implements Game {
 
         let horaHai: number | null = _horaHai
         let i = 0
+
         if(this.event === "dahai"){
             switch(kaze){
                 case 0:
@@ -1186,17 +1188,50 @@ export class Game4 extends GameBase implements Game {
 
     public onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku = "九種九牌"): boolean{
         super.onRyukyokuByPlayer(kaze, type)
-        //TODO
+
         this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type})
-        this.onEnd(null, [0,0,0,0]) //下に同様
+        this.onEnd(null, [0,0,0,0])
         return true;
     }
 
     public onRyukyoku(type: Types.ryukyoku): void{
         super.onRyukyoku(type)
-        //TODO
+
         this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type})
-        this.onEnd(null, [0,0,0,0]) //聴牌の可能性も考える
+
+        let point = [0,0,0,0]
+        if(type === "荒牌平局"){
+            let i = 0
+            let j: {[key in Types.kaze_number]: boolean} = {0: false, 1: false, 2: false, 3: false}
+            const num: Types.kaze_number[] = [0,1,2,3]
+            for(const k of num){
+                if(Shanten.shanten(this.furo[k], this.junhai[k], null) === 0){
+                    i++
+                    j[k] = true
+                }
+            }
+            let minus = 0
+            let plus = 0
+            switch(i){
+                case 1:
+                    minus = 1000
+                    plus = 3000
+                case 2:
+                    minus = 1500
+                    plus = 1500
+                case 3:
+                    minus = 3000
+                    plus = 1000
+            }
+            for(let [s, bool] of Object.entries(j)){
+                if(bool){
+                    point[Number(s)] = plus
+                }else{
+                    point[Number(s)] = minus
+                }
+            }
+        }
+        this.onEnd(null, point)
         return;
     }
 
@@ -1296,7 +1331,7 @@ export class Game4 extends GameBase implements Game {
                 this.jika[2] = jika2
                 this.jika[3] = jika3
                 const c_point = {0: this.point[0], 1: this.point[1] ,2: this.point[2], 3: this.point[3]}
-                this.point = {0: c_point[3], 1: c_point[0], 2: c_point[1], 3: c_point[2]}
+                this.point = {0: c_point[1], 1: c_point[2], 2: c_point[3], 3: c_point[0]}
             }
         }else{
             if(this.info.kyoku === 4){
@@ -1318,7 +1353,11 @@ export class Game4 extends GameBase implements Game {
             this.jika[2] = jika2
             this.jika[3] = jika3
             const c_point = {0: this.point[0], 1: this.point[1] ,2: this.point[2], 3: this.point[3]}
-            this.point = {0: c_point[3], 1: c_point[0], 2: c_point[1], 3: c_point[2]}
+            this.point = {0: c_point[1], 1: c_point[2], 2: c_point[3], 3: c_point[0]}
+        }
+
+        if(hora !== null){
+            this.info.richi = 0
         }
 
         this.server.getProtocol().emitArray("endRoom", Object.keys(this.players), {"protocol": "endRoom"})
@@ -1406,7 +1445,9 @@ export class Game4 extends GameBase implements Game {
 
         this.waitTacha = false
 
-        for(let [a, b] of Object.entries(this.responseCache)){
+        let k = 4
+        const _responseCache = Object.assign({}, this.responseCache)
+        for(let [a, b] of Object.entries(_responseCache)){
             let kaze: Types.kaze_number = 0
             switch(Number(a)){
                 case 1: kaze = 1; break
@@ -1419,27 +1460,40 @@ export class Game4 extends GameBase implements Game {
                         if(j.includes("pon") || j.includes("kan") || j.includes("hora")){
                             break
                         }
-                        this.onChi(kaze, b.hai, b.combi, true)
+                        setTimeout(() => {
+                            if(b !== null)
+                            this.onChi(kaze, b.hai, b.combi, true)
+                        }, k)
                         break
 
                     case "pon":
                         if(j.includes("hora")){
                             break
                         }
-                        this.onPon(kaze, b.hai, b.combi, true)
+                        setTimeout(() => {
+                            if(b !== null)
+                                this.onPon(kaze, b.hai, b.combi, true)
+                        }, k)
                         break
 
                     case "kan":
                         if(j.includes("hora")){
                             break
                         }
-                        this.onKan(kaze, b.hai, b.combi, true)
+                        setTimeout(() => {
+                            if(b !== null)
+                                this.onKan(kaze, b.hai, b.combi, true)
+                        }, k)
                         break
                     case "hora":
-                        this.onHora(kaze, b.hai, true)
+                        setTimeout(() => {
+                            if(b !== null)
+                                this.onHora(kaze, b.hai, true)
+                        }, k)
                         break
                 }
             }
+            k++
         }
         this.waitNum = 0
         this.responseCache = {0: null, 1: null, 2: null, 3: null}

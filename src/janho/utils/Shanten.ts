@@ -23,7 +23,6 @@
  * 
  */
 
-import { Hora } from "./Hora"
 import * as Types from "./Types"
 
 export class Shanten {
@@ -38,9 +37,8 @@ export class Shanten {
         _junhai_["p"] = _junhai_["p"].concat(junhai["p"])
         _junhai_["s"] = _junhai_["s"].concat(junhai["s"])
         _junhai_["j"] = _junhai_["j"].concat(junhai["j"])
-        if(this.shanten(furo, _junhai_, tsumohai) !== 0) return {}
 
-        //捨てた後のシャン点数0 = 捨て可能牌
+        //捨てた後のシャン点数0以下 = 捨て可能牌
         let _tehai = tehai.slice()
         _tehai.push(tsumohai)
         for(let hai of _tehai){
@@ -77,7 +75,7 @@ export class Shanten {
             __junhai_["s"] = __junhai_["s"].concat(_junhai["s"])
             __junhai_["j"] = __junhai_["j"].concat(_junhai["j"])
             
-            if(this.shanten(furo, __junhai_, null) === 0){
+            if(this.shanten(furo, __junhai_, null) <= 0){
                 const tenpai = this.tenpai(furo, __junhai_, null)
                 if(tenpai !== null){
                     result[hai] = tenpai

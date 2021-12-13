@@ -141,7 +141,7 @@ export class Candidate {
                                     result.push([this.getHai(s, i), this.getHai(s, i+1), this.getHai(s, i+2)])
                                 }
                             }else if(i+2 === 5 && junhai[0] >= 1){
-                                result.push([this.getHai(s, 0), this.getHai(s, i+1), this.getHai(s, 0)])
+                                result.push([this.getHai(s, i), this.getHai(s, i+1), this.getHai(s, 0)])
                                 if(junhai[i+2] >= 2){
                                     result.push([this.getHai(s, i), this.getHai(s, i+1), this.getHai(s, i+2)])
                                 }
@@ -165,7 +165,7 @@ export class Candidate {
         let type: Types.junhai_type[] = ["m","p","s","j"]
         for(let s of type){
             let junhai = param.junhai[s]
-            for(let i = 1; i < 8; i++){
+            for(let i = 1; i < 10; i++){
                 if(junhai[i] >= 3){
                     const n = Math.floor(param.hai / 10) % 10
                     if(s !== "j" && i === 5 && n === 0){
@@ -199,7 +199,7 @@ export class Candidate {
         let type: Types.junhai_type[] = ["m","p","s","j"]
         for(let s of type){
             let junhai = param.junhai[s]
-            for(let i = 1; i < 8; i++){
+            for(let i = 1; i < 10; i++){
                 if(junhai[i] >= 4){
                     const n = Math.floor(param.hai / 10) % 10
                     if(s !== "j" && i === 5 && n === 0){
@@ -230,7 +230,7 @@ export class Candidate {
         let type: Types.junhai_type[] = ["m","p","s","j"]
         for(let s of type){
             let junhai = param.junhai[s]
-            for(let i = 1; i < 8; i++){
+            for(let i = 1; i < 10; i++){
                 if(junhai[i] >= 4){
                     if(s !== "j" && i === 5  && junhai[0] >= 1){
                         result.push([this.getHai(s, 0), this.getHai(s, i), this.getHai(s, i), this.getHai(s, i)])

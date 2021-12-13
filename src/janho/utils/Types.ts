@@ -68,7 +68,7 @@ export type point = {
     hora: "tsumo"|"ron"
 }
 
-export type event =  "tsumo" | "dahai" | "pon" | "chi" | "kan" | "kakan" | "ankan" | "kantsumo" | "hora" | "ryukyoku" | "shukyoku"
+export type event =  "tsumo" | "dahai" | "pon" | "chi" | "kan" | "kakan" | "ankan" | "kantsumo" | "hora" | "ryukyoku" | "shukyoku" | "end"
 export type ryukyoku = "荒牌平局" | "九種九牌" | "四家立直" | "三家和" | "四風連打" | "四槓散了"
 
 export type candidated = {[key in "chi" | "pon" | "kan" | "kakan"]: number[][]}
