@@ -17,16 +17,28 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-89"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 89
-    static readonly INTERNAL_VERSION = 1.02
+import {kaze_number} from "../../../utils/Types";
+import {Event} from "../../Event";
+import {GameEvent} from "../GameEvent";
+
+export class ManyHoraEvent extends GameEvent{
+    private readonly kaze: kaze_number[]
+    private readonly horaHai: {[key in kaze_number]: number}
+
+    constructor(event: Event, roomId: string, kaze: kaze_number[], horaHai: {[key in kaze_number]: number}){
+        super(event, roomId)
+        this.kaze = kaze
+        this.horaHai = horaHai
+    }
+
+    public emit(): boolean{
+        super.emit()
+        return this.event.manyHora(this.roomId, this.kaze, this.horaHai)
+    }
 }

@@ -25,9 +25,8 @@
 
 /**
  * 未実装項目
- * ・ダブロン以上に対応させる(今は単独ロンを複数送信してしまう)
- * ・流局 "四家立直" "三家和" "九種九牌" "流し満貫"
- * ・チャンカン追加、加槓修正
+ * ・役 "流し満貫" "チャンカン"
+ * ・加槓修正
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
@@ -64,6 +63,7 @@ export class Game4 extends GameBase implements Game {
     private kui: {[key in Types.kaze_number]: boolean}
     private kan: {[key in Types.kaze_number]: boolean}
     private richi: {[key in Types.kaze_number]: {[key in Types.richi_type]: boolean}}
+    private skipKyushu: {[key in Types.kaze_number]: boolean}
 
     private kaze: Types.kaze_number
     private event: Types.event
@@ -118,6 +118,7 @@ export class Game4 extends GameBase implements Game {
             2: {"bool": false, "double": false, "ippatu": false}, 
             3: {"bool": false, "double": false, "ippatu": false}
         }
+        this.skipKyushu = {0: false, 1: false, 2: false, 3: false}
 
         this.kaze = 0
         this.event = "tsumo"
@@ -222,6 +223,15 @@ export class Game4 extends GameBase implements Game {
         this.server.getProtocol().emit("roomUpdate", socketId, {"protocol": "roomUpdate", "data": data})
     }
 
+    public getNumber(socketId: string): number{
+        let i = 1
+        for(let p of Object.keys(this.players)){
+            if(socketId === p) return i
+            i++
+        }
+        return 0
+    }
+
     /**
      * ゲーム開始(4人全員に配牌処理)
      */
@@ -234,10 +244,15 @@ export class Game4 extends GameBase implements Game {
         this.dorahai["dora"]["hai"] = hai["dora"]
         this.dorahai["uradora"]["hai"] = hai["uradora"]
         this.yamahai["tsumo"]["hai"] = hai["tsumo"]
-        this.tehai[3]["hai"] = this.haiSort(hai["pei"])
-        this.tehai[2]["hai"] = this.haiSort(hai["sha"])
-        this.tehai[1]["hai"] = this.haiSort(hai["nan"])
-        this.tehai[0]["hai"] = this.haiSort(hai["ton"])
+        //this.tehai[3]["hai"] = this.haiSort(hai["pei"])
+        //this.tehai[2]["hai"] = this.haiSort(hai["sha"])
+        //this.tehai[1]["hai"] = this.haiSort(hai["nan"])
+        //this.tehai[0]["hai"] = this.haiSort(hai["ton"])
+
+        this.tehai[3]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
+        this.tehai[2]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
+        this.tehai[1]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
+        this.tehai[0]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
 
         const dora = this.dorahai["dora"]["hai"][0]
         this.dorahai["dora"]["enable"].push(dora)
@@ -436,6 +451,7 @@ export class Game4 extends GameBase implements Game {
             1: {"bool": false, "double": false, "ippatu": false}, 
             2: {"bool": false, "double": false, "ippatu": false}, 
             3: {"bool": false, "double": false, "ippatu": false}}
+        this.skipKyushu = {0: false, 1: false, 2: false, 3: false}
 
         this.kaze = 0
         this.waitRes = {}
@@ -478,7 +494,8 @@ export class Game4 extends GameBase implements Game {
             return
         }
 
-        const tsumoHai = this.yamahai["tsumo"]["hai"].splice(0, 1)[0]
+        //const tsumoHai = this.yamahai["tsumo"]["hai"].splice(0, 1)[0]
+        const tsumoHai = 410
         this.tsumo[kaze] = tsumoHai
 
         this.updateJunhai()
@@ -539,6 +556,13 @@ export class Game4 extends GameBase implements Game {
         }
         if(furo["kakan"].length !== 0){
             result["kakan"] = {"hai": [tsumoHai], "combi": furo["kakan"], "from": null, "data": {}}
+        }
+
+        //九種九牌判定
+        const k_shan = Shanten.shanten_kokushi(this.furo[kaze], this.junhai[kaze])
+        if(k_shan <= 4 && this.skipKyushu[kaze] === false){
+            result["kyushu"] = {"hai": [0], "combi": [], "from": null, "data": {}}
+            this.skipKyushu[kaze] = true
         }
 
         return result
@@ -1170,24 +1194,125 @@ export class Game4 extends GameBase implements Game {
             }
         }
 
-        //todo
-        this.onEnd([kaze], hora.bumpai) //ダブロンなどの場合も考える
-        return true;
+        this.onEnd([kaze], hora.bumpai)
+        return true
+    }
+
+    public onManyHora(kaze: Types.kaze_number[], _horaHai: {[key in Types.kaze_number]: number}): void{
+        super.onManyHora(kaze, _horaHai)
+
+        let bakaze: Types.kaze_number
+        if(this.info["bakaze"] === 0) bakaze = 0
+        else if(this.info["bakaze"] === 1) bakaze = 1
+        else if(this.info["bakaze"] === 2) bakaze = 2
+        else bakaze = 3
+
+        let horas: Types.point[] = []
+        let datas2: Types.data2[] = []
+
+        for(let k of kaze){
+            const richi = this.richi[k]
+            let haitei: Types.hora_number = (this.yamahai["tsumo"]["hai"].length === 0)? 2 : 0
+            let tenho: Types.hora_number = (this.tehai[k].sute.length === 0)? 2 : 0
+            if(this.kaze === k){
+                haitei = (this.yamahai["tsumo"]["hai"].length === 0)? 1 : 0
+                tenho = (this.tehai[k].sute.length === 0)? 1 : 0
+            }
+
+            if(this.richi[k]["bool"]){
+                const length = this.dorahai.dora["enable"].length
+                for(let i = 0; i <= length - 1; i++){
+                    this.dorahai.uradora["enable"].push(this.dorahai.uradora["hai"][i])
+                }
+            }
+
+            const param = Hora.get_param(
+                bakaze, k, {"bool": richi["bool"], "double": richi["double"], "ippatu": richi["ippatu"]},
+                false, false, haitei, tenho, this.dorahai, this.info["homba"], this.info["richi"])
+
+            let horaHai: number | null = _horaHai[k]
+            let i = 0
+
+            if(this.event === "dahai"){
+                switch(k){
+                    case 0:
+                        if(this.kaze === 1) i = 1
+                        else if(this.kaze === 2) i = 2
+                        else if(this.kaze === 3) i = 3
+                        break;
+                    case 1:
+                        if(this.kaze === 0) i = 3
+                        else if(this.kaze === 2) i = 1
+                        else if(this.kaze === 3) i = 2
+                        break;
+                    case 2:
+                        if(this.kaze === 1) i = 3
+                        else if(this.kaze === 0) i = 2
+                        else if(this.kaze === 3) i = 1
+                        break;
+                    case 3:
+                        if(this.kaze === 1) i = 2
+                        else if(this.kaze === 2) i = 3
+                        else if(this.kaze === 0) i = 1
+                        break;
+                }
+            }
+            horaHai = horaHai + i
+            if(i === 0) horaHai = null
+
+            const hora = Hora.hora(this.tehai[k]["hai"], this.furo[k], this.junhai[k], _horaHai[k], horaHai, param)
+
+            const data2: Types.data2 = {
+                "tehai": this.tehai[k]["hai"], "furo": this.furo[k], "horahai": _horaHai[k],
+                "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"]
+            }
+
+            horas.push(hora)
+            datas2.push(data2)
+        }
+
+        let new_bumpai = [0,0,0,0]
+        for(let h of Object.values(horas)){
+            for(let i = 0; i < 4; i++){
+                new_bumpai[i] = new_bumpai[i] + h.bumpai[i]
+            }
+        }
+
+        this.server.getProtocol().emitArray("manyHora", Object.values(this.jika), {"protocol": "manyHora", "kazes": kaze, "datas": horas, "datas2": datas2})
+        if(kaze.length >= 3){
+            this.onRyukyoku("三家和")
+        }else{       
+            this.onEnd(kaze, new_bumpai)
+        }
     }
 
     public onRichi(kaze: Types.kaze_number, richiHai: number): boolean{
         if(!this.responseCheck(kaze, "richi", richiHai)) return false
         super.onRichi(kaze, richiHai)
+
+        this.server.getProtocol().emit("richi", this.jika[kaze], {"protocol": "richi", "result": true})
+
         this.richi[kaze]["bool"] = true
         this.richi[kaze]["ippatu"] = true
         if(this.tehai[kaze]["sute"].length === 0) this.richi[kaze]["double"] = true
         this.info["richi"] = this.info["richi"] + 1 //局終了後に減らす
         this.onDahai(kaze, richiHai, true)
+
+        let i = 0
+        for(let r of Object.values(this.richi)){
+            if(r["bool"]) i++
+        }
+        if(i >= 4){
+            this.onRyukyoku("四家立直")
+        }
         return true;
     }
 
     public onRyukyokuByPlayer(kaze: Types.kaze_number, type: Types.ryukyoku = "九種九牌"): boolean{
+        if(!this.responseCheck(kaze, "kyushu", 0)) return false
         super.onRyukyokuByPlayer(kaze, type)
+
+        this.server.getProtocol().emit("ryukyoku", this.jika[kaze], {"protocol": "ryukyoku", "result": true})
 
         this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type})
         this.onEnd(null, [0,0,0,0])
@@ -1288,6 +1413,7 @@ export class Game4 extends GameBase implements Game {
             1: {"bool": false, "double": false, "ippatu": false}, 
             2: {"bool": false, "double": false, "ippatu": false}, 
             3: {"bool": false, "double": false, "ippatu": false}}
+        this.skipKyushu = {0: false, 1: false, 2: false, 3: false}
 
         this.kaze = 0
         this.waitRes = {}
@@ -1447,6 +1573,17 @@ export class Game4 extends GameBase implements Game {
 
         let k = 4
         const _responseCache = Object.assign({}, this.responseCache)
+
+        let l: {[key in number]: boolean} = {0: false, 1: false, 2: false, 3: false}
+        let m = 0
+        for(let [s, v] of Object.entries(_responseCache)){
+            if(v === null) continue
+            if(v.type === "hora"){
+                l[Number(s)] = true
+                m++
+            }
+        }
+
         for(let [a, b] of Object.entries(_responseCache)){
             let kaze: Types.kaze_number = 0
             switch(Number(a)){
@@ -1486,6 +1623,7 @@ export class Game4 extends GameBase implements Game {
                         }, k)
                         break
                     case "hora":
+                        if(m >= 2) break
                         setTimeout(() => {
                             if(b !== null)
                                 this.onHora(kaze, b.hai, true)
@@ -1495,6 +1633,30 @@ export class Game4 extends GameBase implements Game {
             }
             k++
         }
+
+        if(m >= 2){
+            let kazes: Types.kaze_number[] = []
+            let horahai = {0: 0, 1: 0, 2: 0, 3: 0}
+            for(let [key, value] of Object.entries(l)){
+                let kaze: Types.kaze_number = 0
+                switch(Number(key)){
+                    case 1: kaze = 1; break
+                    case 2: kaze = 2; break
+                    case 3: kaze = 3; break
+                }
+                if(value){
+                    const res = Object.assign({}, _responseCache[kaze])
+                    if(res !== null)
+                        kazes.push(kaze)
+                        horahai[kaze] = res.hai
+
+                }
+            }
+            setTimeout(() => {
+                this.onManyHora(kazes, horahai)
+            }, k - m)
+        }
+
         this.waitNum = 0
         this.responseCache = {0: null, 1: null, 2: null, 3: null}
     }

@@ -57,6 +57,8 @@ import {Richi} from "./game/Richi"
 import {AI} from "./game/AI"
 import {AddAI} from "./room/AddAI"
 import {Info} from "./game/Info"
+import {ManyHora} from "./game/ManyHora"
+import {GetNumber} from "./room/GetNumber"
 
 
 export class Protocol {
@@ -78,6 +80,7 @@ export class Protocol {
             "endRoom": new EndRoom(this.server),
             "roomUpdate": new RoomUpdate(this.server),
             "addAI": new AddAI(this.server),
+            "getNumber": new GetNumber(this.server),
 
             "ai": new AI(this.server),
             "kaikyoku": new Kaikyoku(this.server),
@@ -97,7 +100,8 @@ export class Protocol {
             "kakan": new Kakan(this.server),
             "turn": new Turn(this.server),
             "richi": new Richi(this.server),
-            "info": new Info(this.server)
+            "info": new Info(this.server),
+            "manyHora": new ManyHora(this.server)
         }
     }
 

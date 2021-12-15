@@ -33,7 +33,19 @@ export class Ryukyoku implements JanhoProtocol {
         this.server = server
     }
 
-    public procReceive(socketId: string, data: string): void{}
+    public procReceive(socketId: string, data: string): void{
+        const roomId = this.server.getPlayerRoomId(socketId)
+        if(roomId !== null){
+            const room = this.server.getRoom(roomId)
+            if(room !== null){
+                const kaze = room.getKaze(socketId)
+                if(kaze === null) return
+                const result = room.onRyukyokuByPlayer(kaze, "九種九牌")
+                if(!result) this.procEmit(socketId, {"protocol": "ryukyoku", "result": false})
+                //return true --> Game::onRyukyokuByPlayer()
+            }
+        }
+    }
 
     public procEmit(socketId: string, json: {}): void{
         const data = JSON.stringify(json)

@@ -47,6 +47,7 @@ import { SkipEvent } from "../../event/game/mahjong/SkipEvent"
 import { EndEvent } from "../../event/game/mahjong/EndEvent"
 import { ShukyokuEvent } from "../../event/game/mahjong/ShukyokuEvent"
 import { RyukyokuByPlayerEvent } from "../../event/game/mahjong/RyukyokuByPlayerEvent"
+import { ManyHoraEvent } from "../../event/game/mahjong/ManyHoraEvent"
 
 export abstract class GameBase{
     protected readonly server: janho.Server
@@ -104,6 +105,9 @@ export abstract class GameBase{
     }
     public onHora(kaze: kaze_number, horaHai: number, isCached: boolean){
         new HoraEvent(this.server.getEvent(), this.roomId, kaze, horaHai).emit()
+    }
+    public onManyHora(kaze: kaze_number[], horaHai: {[key in kaze_number]: number}){
+        new ManyHoraEvent(this.server.getEvent(), this.roomId, kaze, horaHai).emit()
     }
     public onRichi(kaze: kaze_number, richiHai: number){
         new RichiEvent(this.server.getEvent(), this.roomId, kaze, richiHai).emit()

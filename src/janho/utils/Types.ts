@@ -75,3 +75,5 @@ export type candidated = {[key in "chi" | "pon" | "kan" | "kakan"]: number[][]}
 export type pre_candidate = {"junhai": {[key in junhai_type]: number[]}, "furo": number[][], "hai": number}
 
 export type wait_res = {[key: string]: {"hai": number[], "combi": number[][], "from": kaze_number | null, "data": {}}}
+
+export type data2 = {tehai: number[], furo: number[][], horahai: number, dora: number[], uradora: number[]}

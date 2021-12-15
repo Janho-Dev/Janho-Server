@@ -29,6 +29,7 @@ export interface Game {
     join(socketId: string): boolean
     ready(socketId: string, bool: boolean): boolean
     loaded(socketId: string): boolean
+    getNumber(socketId: string): number
     start(): void
     quit(socketId: string): boolean
     dead(socketId: string): void

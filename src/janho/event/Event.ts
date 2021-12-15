@@ -83,6 +83,7 @@ export class Event{
     private readonly _kakanEvent: EventPort<(roomId: string, kaze: kaze_number, kanHai: number, combi: number[]) => void>
     private readonly _kantsumoEvent: EventPort<(roomId: string, kaze: kaze_number) => void>
     private readonly _horaEvent: EventPort<(roomId: string, kaze: kaze_number, horaHai: number) => void>
+    private readonly _manyHoraEvent: EventPort<(roomId: string, kaze: kaze_number[], horaHai: {[key in kaze_number]: number}) => void>
     private readonly _richiEvent: EventPort<(roomId: string, kaze: kaze_number, richiHai: number) => void>
     private readonly _ryukyokuByPlayerEvent: EventPort<(roomId: string, kaze: kaze_number, type: ryukyoku) => void>
     private readonly _ryukyokuEvent: EventPort<(roomId: string, type: ryukyoku) => void>
@@ -146,6 +147,7 @@ export class Event{
         this._kakanEvent = new EventPort("kakan", this.emitter)
         this._kantsumoEvent = new EventPort("kantsumo", this.emitter)
         this._horaEvent = new EventPort("hora", this.emitter)
+        this._manyHoraEvent = new EventPort("manyHora", this.emitter)
         this._richiEvent = new EventPort("richi", this.emitter)
         this._ryukyokuByPlayerEvent = new EventPort("ryukyokuByPlayer", this.emitter)
         this._ryukyokuEvent = new EventPort("ryukyoku", this.emitter)
@@ -335,6 +337,10 @@ export class Event{
     public get horaEvent() { return this._horaEvent }
     public hora(roomId: string, kaze: kaze_number, horaHai: number): boolean{
         return this.emitter.emit(this._horaEvent, roomId, kaze, horaHai)
+    }
+    public get manyHoraEvent() { return this._manyHoraEvent }
+    public manyHora(roomId: string, kaze: kaze_number[], horaHai: {[key in kaze_number]: number}): boolean{
+        return this.emitter.emit(this._manyHoraEvent, roomId, kaze, horaHai)
     }
     public get richiEvent() { return this._richiEvent }
     public richi(roomId: string, kaze: kaze_number, richiHai: number): boolean{

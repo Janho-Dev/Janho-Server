@@ -45,7 +45,6 @@ export class Richi implements JanhoProtocol {
                         if(kaze === null) return
                         const result = room.onRichi(kaze, parsed["hai"])
                         if(!result) this.procEmit(socketId, {"protocol": "richi", "result": false})
-                        else this.procEmit(socketId, {"protocol": "richi", "result": true})//todo
                         //return true --> Game::onRichi()
                     }
                 }

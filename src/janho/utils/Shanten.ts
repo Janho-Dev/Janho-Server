@@ -130,7 +130,7 @@ export class Shanten {
      * @param _junhai // {[key in Types.junhai_type]: number[]}
      * @returns 向聴数
      */
-    private static shanten_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): number{
+    static shanten_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): number{
         if(furo.length) return Infinity
 
         let n_yaochu = 0
