@@ -24,9 +24,9 @@
  */
 
 /**
- * 未実装項目
- * ・役 "流し満貫" "チャンカン"
- * ・加槓修正
+ * 場合により実装予定
+ * ・チャンカン
+ * ・喰い変え
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
@@ -61,6 +61,7 @@ export class Game4 extends GameBase implements Game {
 
     private info: {[key in Types.info_type]: number}
     private kui: {[key in Types.kaze_number]: boolean}
+    private kuware: {[key in Types.kaze_number]: boolean}
     private kan: {[key in Types.kaze_number]: boolean}
     private richi: {[key in Types.kaze_number]: {[key in Types.richi_type]: boolean}}
     private skipKyushu: {[key in Types.kaze_number]: boolean}
@@ -111,6 +112,7 @@ export class Game4 extends GameBase implements Game {
 
         this.info = {"bakaze": 0, "kyoku": 0, "homba": 0, "richi": 0, "yama": 70}
         this.kui = {0: false, 1: false, 2: false, 3: false}
+        this.kuware = {0: false, 1: false, 2: false, 3: false}
         this.kan = {0: false, 1: false, 2: false, 3: false}
         this.richi = {
             0: {"bool": false, "double": false, "ippatu": false}, 
@@ -249,10 +251,10 @@ export class Game4 extends GameBase implements Game {
         //this.tehai[1]["hai"] = this.haiSort(hai["nan"])
         //this.tehai[0]["hai"] = this.haiSort(hai["ton"])
 
-        this.tehai[3]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
-        this.tehai[2]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
-        this.tehai[1]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
-        this.tehai[0]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,440]
+        this.tehai[3]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
+        this.tehai[2]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
+        this.tehai[1]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
+        this.tehai[0]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
 
         const dora = this.dorahai["dora"]["hai"][0]
         this.dorahai["dora"]["enable"].push(dora)
@@ -394,7 +396,7 @@ export class Game4 extends GameBase implements Game {
     }
     public clearAllTimer(): void{
         for(const [key, timer] of Object.entries(this.timer)){
-            clearTimeout()//TODO
+            clearTimeout(timer)
         }
     }
     /**
@@ -445,6 +447,7 @@ export class Game4 extends GameBase implements Game {
 
         this.info = {"bakaze": 0, "kyoku": 0, "homba": 0, "richi": 0, "yama": 70}
         this.kui = {0: false, 1: false, 2: false, 3: false}
+        this.kuware = {0: false, 1: false, 2: false, 3: false}
         this.kan = {0: false, 1: false, 2: false, 3: false}
         this.richi = {
             0: {"bool": false, "double": false, "ippatu": false}, 
@@ -494,8 +497,7 @@ export class Game4 extends GameBase implements Game {
             return
         }
 
-        //const tsumoHai = this.yamahai["tsumo"]["hai"].splice(0, 1)[0]
-        const tsumoHai = 410
+        const tsumoHai = this.yamahai["tsumo"]["hai"].splice(0, 1)[0]
         this.tsumo[kaze] = tsumoHai
 
         this.updateJunhai()
@@ -835,6 +837,8 @@ export class Game4 extends GameBase implements Game {
         this.event = "chi"
         this.resetRes()
 
+        this.kuware[this.kaze] = true
+
         let new_combi = combi.slice()
         new_combi.splice(combi.indexOf(furoHai), 1)
         this.tehai[kaze].hai.splice(this.tehai[kaze].hai.indexOf(new_combi[0]), 1)
@@ -1119,6 +1123,8 @@ export class Game4 extends GameBase implements Game {
             return true
         }
 
+        this.clearAllTimer()
+
         let bakaze: Types.kaze_number
         if(this.info["bakaze"] === 0) bakaze = 0
         else if(this.info["bakaze"] === 1) bakaze = 1
@@ -1178,7 +1184,7 @@ export class Game4 extends GameBase implements Game {
 
         const data2 = {
             "tehai": this.tehai[kaze]["hai"], "furo": this.furo[kaze], "horahai": _horaHai,
-            "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"]
+            "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"], "name": this.server.getUserName(this.jika[kaze])
         }
 
         const num: Types.kaze_number[] = [0,1,2,3]
@@ -1200,6 +1206,8 @@ export class Game4 extends GameBase implements Game {
 
     public onManyHora(kaze: Types.kaze_number[], _horaHai: {[key in Types.kaze_number]: number}): void{
         super.onManyHora(kaze, _horaHai)
+
+        this.clearAllTimer()
 
         let bakaze: Types.kaze_number
         if(this.info["bakaze"] === 0) bakaze = 0
@@ -1290,6 +1298,8 @@ export class Game4 extends GameBase implements Game {
         if(!this.responseCheck(kaze, "richi", richiHai)) return false
         super.onRichi(kaze, richiHai)
 
+        this.resetRes()
+
         this.server.getProtocol().emit("richi", this.jika[kaze], {"protocol": "richi", "result": true})
 
         this.richi[kaze]["bool"] = true
@@ -1312,9 +1322,11 @@ export class Game4 extends GameBase implements Game {
         if(!this.responseCheck(kaze, "kyushu", 0)) return false
         super.onRyukyokuByPlayer(kaze, type)
 
+        this.clearAllTimer()
+
         this.server.getProtocol().emit("ryukyoku", this.jika[kaze], {"protocol": "ryukyoku", "result": true})
 
-        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type})
+        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": kaze, "type": type, "tehai": this.tehai[kaze].hai})
         this.onEnd(null, [0,0,0,0])
         return true;
     }
@@ -1322,17 +1334,86 @@ export class Game4 extends GameBase implements Game {
     public onRyukyoku(type: Types.ryukyoku): void{
         super.onRyukyoku(type)
 
-        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type})
+        this.clearAllTimer()
 
         let point = [0,0,0,0]
+        const tehais: {[key in Types.kaze_number]: number[] | null} = {0: null, 1: null, 2: null, 3: null}
         if(type === "荒牌平局"){
+            const num: Types.kaze_number[] = [0,1,2,3]
+            //流し満貫
+            let nagashi: Types.kaze_number[] = []
+            let notNagashi: Types.kaze_number[] = []
+            for(const k of num){
+                if(this.kui[k]) break
+                if(this.kuware[k]) break
+                let result = true
+                for(let p of this.tehai[k].sute){
+                    const s = Math.floor(p / 100) % 10
+                    const n = Math.floor(p / 10) % 10
+                    if(s !== 4){
+                        if(n !== 1 && n !== 9) result = false
+                    }
+                }
+                if(result){
+                    nagashi.push(k)
+                }else{
+                    notNagashi.push(k)
+                }
+            }
+            if(nagashi.length !== 0){
+                let datas: Types.point[] = []
+                let datas2: Types.data2[] = []
+                if(nagashi.length <= 2){
+                    for(let nk of nagashi){
+                        if(nk === 0) point[nk] = 12000 + (this.info.homba * 300) + (this.info.richi * 1000)
+                        else point[nk] = 8000 + (this.info.homba * 300) + (this.info.richi * 1000)
+
+                        datas[nk] = 
+                        {   
+                            "yakuhai": [],
+                            "fu": 0,
+                            "hansu": 0,
+                            "yakuman": 0,
+                            "point": point[nk],
+                            "bumpai": [],
+                            "hora": "nagashi"
+                        }
+                        datas2[nk] = {"tehai": this.tehai[nk].hai, "furo": [], "horahai": 0, "dora": this.dorahai.dora.enable, "uradora": this.dorahai.uradora.enable}
+                    }
+                    for(let nnk of notNagashi){
+                        if(nagashi.length === 1){
+                            if(nagashi.includes(0)){
+                                point[nnk] = -((12000 + (this.info.homba * 300)) / 3)
+                            }else{
+                                if(nnk === 0) point[nnk] = -((12000 + (this.info.homba * 300)) / 3)
+                                else point[nnk] = -(((12000 + (this.info.homba * 300)) / 3)/ 2)
+                            }
+                        }else if(nagashi.length === 2){
+                            if(nagashi.includes(0)){
+                                point[nnk] = -((20000 + (this.info.homba * 300)) / 2)
+                            }else{
+                                point[nnk] = -((16000 + (this.info.homba * 300)) / 2)
+                            }
+                        }
+                    }
+                }
+                datas = datas.filter(v => v)
+                datas2 = datas2.filter(v => v)
+                this.server.getProtocol().emitArray("nagashiMangan", Object.keys(this.players), {"protocol": "nagashiMangan", "kazes": nagashi, "datas": datas, "datas2": datas2})
+                this.onEnd(nagashi, point)
+                return
+            }
+
             let i = 0
             let j: {[key in Types.kaze_number]: boolean} = {0: false, 1: false, 2: false, 3: false}
-            const num: Types.kaze_number[] = [0,1,2,3]
+            let m: Types.kaze_number[] | null = null
             for(const k of num){
                 if(Shanten.shanten(this.furo[k], this.junhai[k], null) === 0){
                     i++
                     j[k] = true
+                    if(m === null) m = []
+                    m.push(k)
+                    tehais[k] = this.tehai[k].hai
                 }
             }
             let minus = 0
@@ -1355,9 +1436,13 @@ export class Game4 extends GameBase implements Game {
                     point[Number(s)] = minus
                 }
             }
+            this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type, "tehais": tehais})
+            this.onEnd(m, point)
+            return
         }
+        this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type, "tehais": tehais})
         this.onEnd(null, point)
-        return;
+        return
     }
 
     public onSkip(kaze: Types.kaze_number): boolean{
@@ -1407,6 +1492,7 @@ export class Game4 extends GameBase implements Game {
         this.tsumo = {0: null, 1: null, 2: null, 3: null}
 
         this.kui = {0: false, 1: false, 2: false, 3: false}
+        this.kuware = {0: false, 1: false, 2: false, 3: false}
         this.kan = {0: false, 1: false, 2: false, 3: false}
         this.richi = {
             0: {"bool": false, "double": false, "ippatu": false}, 

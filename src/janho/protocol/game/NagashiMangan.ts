@@ -17,16 +17,27 @@
  * 
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *  
+ * 
  * @author Saisana299
  * @link https://github.com/Janho-Dev/Janho-Server
  * 
  */
 
-export class VersionInfo {
-    static readonly NAME = "Janho Server"
-    static readonly VERSION = "dev-90"
-    static readonly IS_DEVELOPMENT_BUILD = true
-    static readonly BUILD_NUMBER = 90
-    static readonly INTERNAL_VERSION = 1.02
+import * as janho from "../../Server"
+import {JanhoProtocol} from "../JanhoProtocol"
+
+export class NagashiMangan implements JanhoProtocol {
+    private readonly server: janho.Server
+    
+    constructor(server: janho.Server){
+        this.server = server
+    }
+
+    public procReceive(socketId: string, data: string): void{
+    }
+
+    public procEmit(socketId: string, json: {}): void{
+        const data = JSON.stringify(json)
+        this.server.emitData(socketId, data)
+    }
 }

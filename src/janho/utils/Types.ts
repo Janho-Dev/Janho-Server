@@ -65,7 +65,7 @@ export type point = {
     yakuman: number,
     point: number,
     bumpai: number[],
-    hora: "tsumo"|"ron"
+    hora: "tsumo"|"ron"|"nagashi"
 }
 
 export type event =  "tsumo" | "dahai" | "pon" | "chi" | "kan" | "kakan" | "ankan" | "kantsumo" | "hora" | "ryukyoku" | "shukyoku" | "end"

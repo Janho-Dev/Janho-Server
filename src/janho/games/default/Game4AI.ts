@@ -78,6 +78,14 @@ export class Game4AI {
                     }, 1)
                 })
                 break
+
+            case "shukyoku":
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        this.parent.ready(socketId, true)
+                    }, 1)
+                })
+                break
         }
     }
 }
