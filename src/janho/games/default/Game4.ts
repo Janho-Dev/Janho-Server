@@ -246,15 +246,10 @@ export class Game4 extends GameBase implements Game {
         this.dorahai["dora"]["hai"] = hai["dora"]
         this.dorahai["uradora"]["hai"] = hai["uradora"]
         this.yamahai["tsumo"]["hai"] = hai["tsumo"]
-        //this.tehai[3]["hai"] = this.haiSort(hai["pei"])
-        //this.tehai[2]["hai"] = this.haiSort(hai["sha"])
-        //this.tehai[1]["hai"] = this.haiSort(hai["nan"])
-        //this.tehai[0]["hai"] = this.haiSort(hai["ton"])
-
-        this.tehai[3]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
-        this.tehai[2]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
-        this.tehai[1]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
-        this.tehai[0]["hai"] = [110,190,210,290,390,310,410,420,430,450,460,470,190]
+        this.tehai[3]["hai"] = this.haiSort(hai["pei"])
+        this.tehai[2]["hai"] = this.haiSort(hai["sha"])
+        this.tehai[1]["hai"] = this.haiSort(hai["nan"])
+        this.tehai[0]["hai"] = this.haiSort(hai["ton"])
 
         const dora = this.dorahai["dora"]["hai"][0]
         this.dorahai["dora"]["enable"].push(dora)
@@ -1272,7 +1267,7 @@ export class Game4 extends GameBase implements Game {
 
             const data2: Types.data2 = {
                 "tehai": this.tehai[k]["hai"], "furo": this.furo[k], "horahai": _horaHai[k],
-                "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"]
+                "dora": this.dorahai["dora"]["enable"], "uradora": this.dorahai["uradora"]["enable"], "name": this.server.getUserName(this.jika[k])
             }
 
             horas.push(hora)
@@ -1378,7 +1373,7 @@ export class Game4 extends GameBase implements Game {
                             "bumpai": [],
                             "hora": "nagashi"
                         }
-                        datas2[nk] = {"tehai": this.tehai[nk].hai, "furo": [], "horahai": 0, "dora": this.dorahai.dora.enable, "uradora": this.dorahai.uradora.enable}
+                        datas2[nk] = {"tehai": this.tehai[nk].hai, "furo": [], "horahai": 0, "dora": this.dorahai.dora.enable, "uradora": this.dorahai.uradora.enable, "name": this.server.getUserName(this.jika[nk])}
                     }
                     for(let nnk of notNagashi){
                         if(nagashi.length === 1){
@@ -1399,7 +1394,7 @@ export class Game4 extends GameBase implements Game {
                 }
                 datas = datas.filter(v => v)
                 datas2 = datas2.filter(v => v)
-                this.server.getProtocol().emitArray("nagashiMangan", Object.keys(this.players), {"protocol": "nagashiMangan", "kazes": nagashi, "datas": datas, "datas2": datas2})
+                this.server.getProtocol().emitArray("nagashiMangan", Object.keys(this.players), {"protocol": "nagashiMangan", "kazes": nagashi, "datas": datas, "datas2": datas2, "point": point})
                 this.onEnd(nagashi, point)
                 return
             }
@@ -1420,14 +1415,17 @@ export class Game4 extends GameBase implements Game {
             let plus = 0
             switch(i){
                 case 1:
-                    minus = 1000
+                    minus = -1000
                     plus = 3000
+                    break
                 case 2:
-                    minus = 1500
+                    minus = -1500
                     plus = 1500
+                    break
                 case 3:
-                    minus = 3000
+                    minus = -3000
                     plus = 1000
+                    break
             }
             for(let [s, bool] of Object.entries(j)){
                 if(bool){
@@ -1436,7 +1434,7 @@ export class Game4 extends GameBase implements Game {
                     point[Number(s)] = minus
                 }
             }
-            this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type, "tehais": tehais})
+            this.server.getProtocol().emitArray("ryukyoku", Object.keys(this.players), {"protocol": "ryukyoku", "kaze": null, "type": type, "tehais": tehais, "point": point})
             this.onEnd(m, point)
             return
         }
