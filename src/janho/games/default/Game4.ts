@@ -351,6 +351,8 @@ export class Game4 extends GameBase implements Game {
         for(let name of p){
             if(name[0]+name[1]+name[2] === "AI-"){
                 j++
+            }else if(this.players[name] === "dead"){
+                j++
             }
         }
         if(j === p.length){
@@ -403,7 +405,6 @@ export class Game4 extends GameBase implements Game {
         delete this.timer[socketId]
         this.server.getProtocol().emit("timeout", socketId, {"protocol": "timeout", "event": json})
         this.server.getProtocol().receive(socketId, JSON.stringify(json))
-        delete this.waitRes[socketId]
     }
 
     /**
@@ -1301,6 +1302,7 @@ export class Game4 extends GameBase implements Game {
         this.richi[kaze]["ippatu"] = true
         if(this.tehai[kaze]["sute"].length === 0) this.richi[kaze]["double"] = true
         this.info["richi"] = this.info["richi"] + 1 //局終了後に減らす
+        this.point[kaze] = this.point[kaze] - 1000
         this.onDahai(kaze, richiHai, true)
 
         let i = 0
@@ -1597,9 +1599,9 @@ export class Game4 extends GameBase implements Game {
                 }else{
                     if(combi.length){
                         if(!(response["protocol"][protocol]["combi"].some(n => 
-                            (n.length === combi.length) && combi.every(i => n.includes(i))
-                        ))){
-                            return false
+                            (n.length === combi.length) &&
+                            JSON.stringify(n.concat().sort()) === JSON.stringify(combi.concat().sort())))){
+                                return false
                         }
                     }
                 }

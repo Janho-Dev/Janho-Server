@@ -549,9 +549,9 @@ export class Hora {
             let kaze = ["東", "南", "西", "北"]
             let kazehai_all = []
             if(hudi.kotsu.j[hudi.bakaze+1])
-                kazehai_all.push({name: "場風 " + kaze[hudi.bakaze], hansu: 1, hojusha: null})
+                kazehai_all.push({name: "場風　" + kaze[hudi.bakaze], hansu: 1, hojusha: null})
             if(hudi.kotsu.j[hudi.jikaze+1])
-                kazehai_all.push({name: "自風 " + kaze[hudi.jikaze], hansu: 1, hojusha: null})
+                kazehai_all.push({name: "自風　" + kaze[hudi.jikaze], hansu: 1, hojusha: null})
             if(hudi.kotsu.j[5]) kazehai_all.push({name: "翻牌　白", hansu: 1, hojusha: null})
             if(hudi.kotsu.j[6]) kazehai_all.push({name: "翻牌　發", hansu: 1, hojusha: null})
             if(hudi.kotsu.j[7]) kazehai_all.push({name: "翻牌　中", hansu: 1, hojusha: null})
