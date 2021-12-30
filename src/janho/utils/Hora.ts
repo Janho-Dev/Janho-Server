@@ -284,7 +284,8 @@ export class Hora {
 
         let n_akadorahai = 0
         for(let m of tehai){
-            if(m % 100 != 0) continue
+            let s = Math.floor(m / 10) % 10
+            if(s != 0) continue
             n_akadorahai ++
         }
         if(n_akadorahai) post_yakuhai.push({name: "赤ドラ", hansu: n_akadorahai, hojusha: null})
