@@ -311,6 +311,7 @@ export class Game4 extends GameBase implements Game {
     public quit(socketId: string): boolean{
         if(this.gameStatus === "game") return false
         super.quit(socketId)
+        this.server.deletePlayer(socketId)
         delete this.players[socketId]
         if(Object.keys(this.players).length === 0){
             this.server.deleteRoom(this.roomId)
