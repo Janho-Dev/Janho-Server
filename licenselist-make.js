@@ -24,14 +24,14 @@
  */
 
 const fs = require("fs");
-const csvParse = require("csv-parse/lib/sync");
-const csvStringify = require("csv-stringify/lib/sync");
+const { parse } = require("csv-parse/sync");
+const { stringify } = require("csv-stringify/sync");
 let cache = ["", " "];
 let new_data = [];
 //[{"module name": string, license: string, repository: string}]
 
 let rfs = fs.readFileSync("./src/janho/resource/Licenses.csv");
-let data = csvParse(rfs, {columns: true});
+let data = parse(rfs, {columns: true});
 for(let d of data){
     if(!("module name" in d)) continue;
     const m_name = d["module name"].substring(0, d["module name"].indexOf("@", 1));
@@ -39,7 +39,7 @@ for(let d of data){
     cache.push(m_name);
     new_data.push({"module name": m_name, license: d.license, repository: d.repository});
 }
-const new_csv = csvStringify(new_data, {header: true});
+const new_csv = stringify(new_data, {header: true});
 fs.writeFile('./src/janho/resource/Licenses.csv', new_csv, function (err) {
     if (err) { throw err; }
 });

@@ -246,6 +246,7 @@ export class Game4 extends GameBase implements Game {
         this.dorahai["dora"]["hai"] = hai["dora"]
         this.dorahai["uradora"]["hai"] = hai["uradora"]
         this.yamahai["tsumo"]["hai"] = hai["tsumo"]
+
         this.tehai[3]["hai"] = this.haiSort(hai["pei"])
         this.tehai[2]["hai"] = this.haiSort(hai["sha"])
         this.tehai[1]["hai"] = this.haiSort(hai["nan"])

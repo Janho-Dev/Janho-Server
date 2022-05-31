@@ -25,8 +25,8 @@
 
 export class VersionInfo {
     static readonly NAME = "Janho Server"
-    static readonly VERSION = "1.1.3"
+    static readonly VERSION = "1.1.4"
     static readonly IS_DEVELOPMENT_BUILD = false
-    static readonly BUILD_NUMBER = 95
-    static readonly INTERNAL_VERSION = 1.13
+    static readonly BUILD_NUMBER = 96
+    static readonly INTERNAL_VERSION = 1.14
 }

@@ -24,7 +24,7 @@
  */
 
 import * as janho from "../../Server"
-import csvParse from "csv-parse/lib/sync"
+import {parse} from "csv-parse/sync"
 import fs from "fs"
 import path from "path"
 import {DefaultCommand} from "./DefaultCommand"
@@ -70,7 +70,7 @@ export class LicenseCommand implements DefaultCommand {
             this.server.getLogger().log("info", " You can see more detailed usage with \"license list\".")
         }else if(args[0] === "list"){
             let rfs = fs.readFileSync(this.csv_path)
-            let data = csvParse(rfs, {columns: true})
+            let data = parse(rfs, {columns: true})
             const listIt = require("list-it")
             const buf = new listIt({"autoAlign": true})
             let licenses = [["[Module name]", "[License]", "[Repository]"]]

@@ -1,6 +1,6 @@
-$cp = Convert-Path .
-$sp = Split-Path -Qualifier $cp
-$env:Path = $env:Path + ";"+$sp+"\Node-Dev\node"
+#$cp = Convert-Path .
+#$sp = Split-Path -Qualifier $cp
+#$env:Path = $env:Path + ";"+$sp+"\Node-Dev\node"
 $txt = Read-Host "Do tsc compile?(Y/n)"
 If($txt -ne "n" -and $txt -ne "N"){
 	npm run tsc
