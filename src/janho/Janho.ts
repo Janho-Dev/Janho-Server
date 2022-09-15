@@ -23,7 +23,9 @@
  * 
  */
 
-require("janho-server-dev") //Comment out if you don't build to js
+
+// TypeScriptで起動する場合はコメントアウト
+require("janho-server-dev")
 
 import * as express from "express"
 import * as http from "http"
@@ -51,7 +53,7 @@ let io: socketio.Server
 let server: janho.Server
 let port = 3000
 
-//例外発生時エラーログを出力
+// 例外発生時エラーログを出力する
 process.on("uncaughtException", function(error) {
     console.error("Caught exception: " + error.message + "\n")
     console.error(error.stack + "\n")
@@ -79,6 +81,12 @@ process.on("uncaughtException", function(error) {
     })
 })
 
+/**
+ * 初期化処理
+ * @param https - 暗号化モードの有無
+ * @param key - 秘密鍵の絶対パス
+ * @param cert - 証明書の絶対パス
+ */
 async function initialize(https: boolean, key: string, cert: string): Promise<void>{
     if(https){
         hoster = createServer({
@@ -91,13 +99,13 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
     io = new socketio.Server(hoster, {
         allowEIO3: true,
         cors: {
-            origin: ["file://", "http://localhost:7456", "https://www.janhoyaba.com", "https://sub.janhoyaba.com"],
+            origin: ["file://", "http://localhost:7456"],
             methods: ["GET", "POST"]
         }
     })
     server = new janho.Server(io)
 
-        //socket.io コネクション処理
+    // socket.io コネクション処理
     io.on("connection", (socket: socketio.Socket) => {
         new SocketConnectEvent(server.getEvent(), socket.id).emit()
         socket.on("disconnect", () => {
@@ -111,7 +119,8 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
             }catch(e){
                 return
             }
-            //データ構文確認
+
+            // 受信したデータの型を確認する
             if(Judge.judgeArrOrHash(parsed) !== "hash") return
             new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -123,7 +132,7 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
         })
     })
 
-    //プログラム停止時
+    // プログラム停止時実行
     process.on("exit", (code: number) => {
         new ServerStopEvent(server.getEvent()).emit()
         server.getPluginManager().unload()
@@ -131,9 +140,9 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
     })
 }
 
-//メイン関数
+/** メイン関数 */
 async function execute(){
-    //JSONファイルを読み込み
+    // 設定ファイルを読み込み
     const data = {"server": {"port": 3000,"enable-https": false,"key": "","cert": ""}}
     const pt = path.resolve(__dirname, "..", "..", "janho.json")
     if(!fs.existsSync(pt)){
@@ -153,7 +162,7 @@ async function execute(){
     }
     await initialize(https, json["server"]["key"], json["server"]["cert"])
 
-    //バージョンを確認
+    // バージョンを確認
     new ServerPreLoadEvent(server.getEvent()).emit()
     server.getLogger().log("success", `Janho Server ${VersionInfo.VERSION}. -The online mahjong software-`)
     if(VersionInfo.IS_DEVELOPMENT_BUILD){
@@ -163,7 +172,7 @@ async function execute(){
     server.getLogger().log("info", `This server is running Janho Client version 1.x.x`)
     server.getLogger().log("info", "Janho Server is distributed under the GNU Affero General Public License version 3.")
 
-    //プラグインをロード
+    // プラグインをロード
     const loadPlugins = () => {
         return new Promise<void>((resolve, reject) => {
             server.getLogger().log("info", "Preparing to load the plugin...")
@@ -173,7 +182,7 @@ async function execute(){
     }
     await loadPlugins()
 
-    //設定したポート番号でサーバーを開く
+    // 設定したポート番号でサーバーを開く
     try{
         hoster.listen(port, () => {
             server.getLogger().log("info", `Server was started on *:${port}`)

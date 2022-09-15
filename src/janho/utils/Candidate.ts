@@ -28,18 +28,22 @@
 import * as Types from "./Types"
 
 export class Candidate {
+
     /**
      * 鳴きの候補一覧を取得
-     * @param kaze 場風
-     * @param jikaze 自風
-     * @param junhai 純牌
-     * @param furo 鳴き牌
-     * @param hai 加える牌
-     * @returns Types.candidated
+     * @param kaze - 場風
+     * @param jikaze - 自風
+     * @param _junhai - 純牌
+     * @param _furo - 鳴き牌
+     * @param hai - 加える牌
+     * @returns 鳴き候補一覧
      */
     static get(
-        kaze: Types.kaze_number, jikaze: Types.kaze_number,
-        _junhai: {[key in Types.junhai_type]: number[]}, _furo: number[][], hai: number
+        kaze: Types.kaze_number,
+        jikaze: Types.kaze_number,
+        _junhai: {[key in Types.junhai_type]: number[]},
+        _furo: number[][],
+        hai: number
     ): Types.candidated{
 
         let furo = JSON.parse(JSON.stringify(_furo))
@@ -105,7 +109,7 @@ export class Candidate {
 
     /**
      * チーによる鳴きの判定
-     * @param param Types.pre_candidate
+     * @param param - 手牌、鳴き牌情報
      * @returns 鳴きの組み合わせ候補一覧
      */
     private static getChi(param: Types.pre_candidate): number[][]{
@@ -155,9 +159,10 @@ export class Candidate {
         }
         return result
     }
+
     /**
      * ポンによる鳴きの判定
-     * @param param Types.pre_candidate
+     * @param param - 手牌、鳴き牌情報
      * @returns 鳴きの組み合わせ候補一覧
      */
     private static getPon(param: Types.pre_candidate): number[][]{
@@ -189,9 +194,10 @@ export class Candidate {
         }
         return result
     }
+
     /**
      * カンによる鳴きの判定
-     * @param param Types.pre_candidate
+     * @param param - 手牌、鳴き牌情報
      * @returns 鳴きの組み合わせ候補一覧
      */
     private static getKan(param: Types.pre_candidate): number[][]{
@@ -220,9 +226,10 @@ export class Candidate {
         }
         return result
     }
+
     /**
      * 暗槓による鳴きの判定
-     * @param param Types.pre_candidate
+     * @param param - 手牌、鳴き牌情報
      * @returns 鳴きの組み合わせ候補一覧
      */
     private static getAnkan(param: Types.pre_candidate): number[][]{
@@ -242,9 +249,10 @@ export class Candidate {
         }
         return result
     }
+
     /**
      * 加槓による鳴きの判定
-     * @param param Types.pre_candidate
+     * @param param - 手牌、鳴き牌情報
      * @returns 鳴きの組み合わせ候補一覧
      */
     private static getKakan(param: Types.pre_candidate): number[][]{
@@ -301,8 +309,8 @@ export class Candidate {
 
     /**
      * 牌種と数字から牌IDを求める
-     * @param s 牌種
-     * @param n 牌の数字
+     * @param s - 牌種
+     * @param n - 牌の数字
      * @returns 牌ID
      */
     private static getHai(s: Types.junhai_type, n: number): number{

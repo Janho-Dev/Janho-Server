@@ -47,6 +47,7 @@ export class PluginManager {
         this.init()
     }
 
+    /** 初期化 */
     private init(){
         if(!fs.existsSync(this.pluginDir)){
             try{
@@ -57,6 +58,11 @@ export class PluginManager {
         }
     }
 
+    /**
+     * プラグインの取得
+     * @param name - プラグイン名
+     * @returns プラグイン又はNULL
+     */
     public getPlugin(name: string): {"class": PluginBase, "json": any} | null{
         if(name.toLowerCase() in this.plugins){
             return this.plugins[name.toLowerCase()]
@@ -65,6 +71,11 @@ export class PluginManager {
         }
     }
 
+    /**
+     * プラグインクラスの取得
+     * @param name - プラグイン名
+     * @returns プラグインクラス又はNULL
+     */
     public getPluginClass(name: string): PluginBase | null{
         const result = this.getPlugin(name)
         if(result !== null){
@@ -74,6 +85,11 @@ export class PluginManager {
         }
     }
 
+    /**
+     * プラグイン設定ファイルの取得
+     * @param name - プラグイン名
+     * @returns プラグイン設定ファイル又はNULL
+     */
     public getPluginJson(name: string): any{
         const result = this.getPlugin(name)
         if(result !== null){
@@ -83,6 +99,7 @@ export class PluginManager {
         }
     }
 
+    /** プラグイン一覧を取得 */
     public getPluginList(): string[]{
         let list: string[] = []
         for(let [name, plugin] of Object.entries(this.plugins)){
@@ -91,6 +108,7 @@ export class PluginManager {
         return list
     }
 
+    /** プラグインのロード */
     public async load(){
         if(this.loaded) return
         new PluginPreLoadEvent(this.server.getEvent()).emit()
@@ -162,6 +180,7 @@ export class PluginManager {
         new PluginLoadEvent(this.server.getEvent()).emit()
     }
 
+    /** プラグインのアンロード */
     public unload(){
         new PluginPreUnloadEvent(this.server.getEvent()).emit()
         for(let [name, plugin] of Object.entries(this.plugins)){

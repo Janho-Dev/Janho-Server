@@ -49,6 +49,20 @@ export class Hora {
      * 2: 地和・河底撈魚
      */
 
+    /**
+     * 整列されたパラメーターの取得
+     * @param bakaze - 場風
+     * @param jikaze - 自風
+     * @param _richi - 立直状態
+     * @param chankan - 槍槓
+     * @param rinshan - 嶺上
+     * @param haitei - 海底
+     * @param tenho - 天和
+     * @param _dorahai - ドラ
+     * @param tsumibo - 積み棒
+     * @param richibo - 立直棒
+     * @returns 整列されたパラメーター
+     */
     static get_param
     (
         bakaze: Types.kaze_number, 
@@ -98,6 +112,16 @@ export class Hora {
         }
     }
 
+    /**
+     * 和了情報の取得
+     * @param _tehai - 手牌
+     * @param __furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @param tsumohai - ツモ牌
+     * @param ronhai - ロン牌
+     * @param param - パラメーター
+     * @returns 和了情報
+     */
     static hora(_tehai: number[], __furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number | null, param: Types.hora_info){
         let tehai = _tehai.slice()
         
@@ -166,6 +190,15 @@ export class Hora {
         return max
     }
 
+    /**
+     * 点数を含めた和了情報を取得
+     * @param fu - 符数
+     * @param yakuhai - 役牌
+     * @param _ronhai - ロン牌
+     * @param param - パラメーター
+     * @param hora - 和了種類
+     * @returns 点数を含めた和了情報
+     */
     private static get_point(fu: number, yakuhai: Types.yakuhai, _ronhai: number | null, param: Types.hora_info, hora: "ron"|"tsumo"): Types.point{
         if(yakuhai.length == 0) return {yakuhai: [], fu: 0, hansu: 0, yakuman: 0, point: 0, bumpai: [], hora: hora}
 
@@ -269,6 +302,13 @@ export class Hora {
         }
     }
 
+    /**
+     * ドラ役牌の取得
+     * @param tehai - 手牌
+     * @param dorahai - ドラ牌
+     * @param uradorahai - 裏ドラ牌
+     * @returns ドラ役牌
+     */
     private static get_post_yakuhai(tehai: number[], dorahai: number[], uradorahai: number[]): Types.yakuhai{
         let post_yakuhai = []
 
@@ -303,6 +343,14 @@ export class Hora {
         return post_yakuhai
     }
 
+    /**
+     * 役牌の取得
+     * @param mentsu - 面子
+     * @param hudi - 胡底
+     * @param pre_yakuhai - 特殊役牌
+     * @param post_yakuhai - ドラ役牌
+     * @returns 役牌
+     */
     private static get_yakuhai(mentsu: string[], hudi: Types.hudi, pre_yakuhai: Types.yakuhai, post_yakuhai: Types.yakuhai): Types.yakuhai{
         
         const str_mentsu = mentsu
@@ -566,6 +614,11 @@ export class Hora {
         }
     }
 
+    /**
+     * 特殊役牌の取得
+     * @param yakuhai - 役牌タイプ
+     * @returns 特殊役牌
+     */
     private static get_pre_yakuhai(yakuhai: {[key in Types.yakuhai_type]: number | boolean}): Types.yakuhai{
         let pre_yakuhai: Types.yakuhai = []
 
@@ -583,6 +636,13 @@ export class Hora {
         return pre_yakuhai
     }
 
+    /**
+     * 胡底取得
+     * @param mentsu - 面子
+     * @param bakaze - 場風
+     * @param jikaze - 自風
+     * @returns 胡底
+     */
     private static get_hudi(mentsu: string[], bakaze: Types.kaze_number, jikaze: Types.kaze_number): Types.hudi{
 
         const str_mentsu = mentsu
@@ -698,6 +758,14 @@ export class Hora {
         return hudi
     }
 
+    /**
+     * 和了形の取得
+     * @param furo - 鳴き牌
+     * @param junhai - 純牌
+     * @param tsumohai - ツモ牌
+     * @param ronhai - ロン牌
+     * @returns 和了形
+     */
     private static hora_mentsu(furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number | number[], ronhai: number | null): string[][]{
         let mentsu: string[][] = []
         
@@ -726,6 +794,13 @@ export class Hora {
         .concat(this.hora_mentsu_churen(furo, junhai, horahai))
     }
 
+    /**
+     * 九蓮宝燈の和了形取得
+     * @param furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @param horahai - 和了牌
+     * @returns 九蓮宝燈の和了形
+     */
     private static hora_mentsu_churen(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
 
@@ -737,7 +812,7 @@ export class Hora {
         if(s == "s") junhai = _junhai["s"]
         else if(s == "p") junhai = _junhai["p"]
         else if(s == "m") junhai = _junhai["m"]
-        if(junhai == []) return []
+        if(junhai.length == 0) return []
 
         for (let n = 1; n <= 9; n++) {
             if ((n == 1 || n == 9) && junhai[n] < 3) return []
@@ -753,6 +828,13 @@ export class Hora {
         return [[mentsu]]
     }
 
+    /**
+     * 国士無双の和了形取得
+     * @param furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @param horahai - 和了牌
+     * @returns 国士無双の和了形
+     */
     private static hora_mentsu_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
 
@@ -786,6 +868,13 @@ export class Hora {
         return (n_toitsu == 1) ? mentsu : []
     }
 
+    /**
+     * 七対子の和了形取得
+     * @param furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @param horahai - 和了牌
+     * @returns 七対子の和了形
+     */
     private static hora_mentsu_chitoi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         if(furo.length > 0) return []
         
@@ -811,6 +900,13 @@ export class Hora {
         return (mentsu[0].length == 7) ? mentsu : []
     }
 
+    /**
+     * 一般の和了形取得
+     * @param furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @param horahai - 和了牌
+     * @returns 一般の和了形
+     */
     private static hora_mentsu_ippan(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, horahai: number): string[][]{
         let mentsu: string[][] = []
 
@@ -835,6 +931,12 @@ export class Hora {
         return mentsu
     }
 
+    /**
+     * 和了牌の追加
+     * @param mentsu 面子
+     * @param p 牌
+     * @returns 和了牌面子
+     */
     private static add_horahai(mentsu: string[], p: string): string[][]{
         let [s, n, d] = p
         let regexp   = new RegExp(`^(${s}.*${n})`)
@@ -855,6 +957,12 @@ export class Hora {
         return new_mentsu
     }
 
+    /**
+     * 全ての面子取得
+     * @param _furo - 鳴き牌
+     * @param _junhai - 純牌
+     * @returns 全ての面子
+     */
     private static mentsu_all(_furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): string[][]{
         let shupai_all: string[][] = [[]]
         for(let [s, junhai] of Object.entries(_junhai)){
@@ -881,6 +989,13 @@ export class Hora {
         return shupai_all.map(shupai => shupai.concat(jihai).concat(furo))
     }
 
+    /**
+     * 面子取得
+     * @param s - 牌種
+     * @param junhai - 純牌
+     * @param n - 牌数字
+     * @returns 面子
+     */
     private static mentsu(s: string, junhai: number[], n = 1): string[][]{
         if(n > 9) return [[]]
 
@@ -913,6 +1028,11 @@ export class Hora {
         return shuntsu.concat(kotsu)
     }
 
+    /**
+     * ドラ表示牌からドラ牌を取得
+     * @param p - ドラ表示牌
+     * @returns ドラ牌
+     */
     private static shindorahai(p: number): number{
         const num = Math.floor(p / 10) % 10
         const s = Math.floor(p / 100) % 10
@@ -936,6 +1056,11 @@ export class Hora {
         return (s * 100) + (new_num * 10)
     }
 
+    /**
+     * 文字列型面子の取得
+     * @param mentsu - 面子
+     * @returns - 文字列型面子
+     */
     private static toStrMentsu(mentsu: number[][]): string[]{
         let str_mentsu: string[] = []
         for(const [key, m] of Object.entries(mentsu)){

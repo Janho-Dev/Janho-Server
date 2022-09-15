@@ -64,9 +64,9 @@ export class Server {
 
 	/**
 	 * 利用ユーザの追加
-	 * @param socketId セッションID
-	 * @param name ユーザー名
-	 * @returns true | false
+	 * @param socketId - セッションID
+	 * @param name - ユーザー名
+	 * @returns 結果
 	 */
 	public addUser(socketId: string, name: string): boolean{
 		if(!(socketId in this.users)){
@@ -78,7 +78,7 @@ export class Server {
 	}
 	/**
 	 * 利用ユーザの削除
-	 * @param socketId セッションID
+	 * @param socketId - セッションID
 	 */
 	public deleteUser(socketId: string): void{
 		if(socketId in this.users){
@@ -89,8 +89,8 @@ export class Server {
 	}
 	/**
 	 * 利用ユーザの確認
-	 * @param socketId セッションID
-	 * @returns true | false
+	 * @param socketId - セッションID
+	 * @returns 結果
 	 */
 	public isUser(socketId: string): boolean{
 		if(socketId in this.users)
@@ -100,8 +100,8 @@ export class Server {
 	}
 	/**
 	 * 利用ユーザ名取得
-	 * @param socketId セッションID
-	 * @returns ユーザ名 | null
+	 * @param socketId - セッションID
+	 * @returns ユーザー名又はNULL
 	 */
 	public getUserName(socketId: string): string|null{
 		if(socketId in this.users)
@@ -109,18 +109,15 @@ export class Server {
 		else
 			return null
 	}
-	/**
-	 * 全利用ユーザ取得
-	 * @returns // {[key in string]: string}
-	 */
+	/** 全利用ユーザ取得 */
 	public getAllUser(): {[key in string]: string} {
 		return this.users
 	}
 
 	/**
 	 * プレイヤーの追加
-	 * @param socketId セッションID
-	 * @param roomId 部屋ID
+	 * @param socketId - セッションID
+	 * @param roomId - 部屋ID
 	 */
 	public addPlayer(socketId: string, roomId: string): void{
 		if(!(socketId in this.players))
@@ -129,7 +126,7 @@ export class Server {
 	}
 	/**
 	 * プレイヤーの削除
-	 * @param socketId セッションID
+	 * @param socketId - セッションID
 	 */
 	public deletePlayer(socketId: string): void{
 		if(socketId in this.players)
@@ -138,8 +135,8 @@ export class Server {
 	}
 	/**
 	 * プレイヤーの確認
-	 * @param socketId セッションID
-	 * @returns true | false
+	 * @param socketId - セッションID
+	 * @returns 結果
 	 */
 	public isPlayer(socketId: string): boolean{
 		if(socketId in this.players)
@@ -149,8 +146,8 @@ export class Server {
 	}
 	/**
 	 * プレイヤーの部屋ID取得
-	 * @param socketId セッションID
-	 * @returns 部屋ID | null
+	 * @param socketId - セッションID
+	 * @returns 部屋ID又はNULL
 	 */
 	public getPlayerRoomId(socketId: string): string|null{
 		if(socketId in this.players)
@@ -158,23 +155,20 @@ export class Server {
 		else
 			return null
 	}
-	/**
-	 * 全プレイヤーの取得
-	 * @returns // {[key in string]: string}
-	 */
+	/** 全プレイヤーの取得 */
 	public getAllPlayer(): {[key in string]: string} {
 		return this.players
 	}
 
 	/**
 	 * 部屋追加
-	 * @param roomId 部屋ID
-	 * @param hosterId セッションID
-	 * @returns true | false
+	 * @param roomId - 部屋ID
+	 * @param hosterId - セッションID
+	 * @returns 結果
 	 */
 	public addRoom(roomId: string, hosterId: string): boolean{
 		if(!(roomId in this.rooms)){
-			//現在は4麻のみ
+			// 現在は4麻のみ
 			this.rooms[roomId] = new Game4(this, roomId, hosterId)
 			new RoomAddEvent(this.getEvent(), roomId, hosterId).emit()
 			return true
@@ -183,7 +177,7 @@ export class Server {
 	}
 	/**
 	 * 部屋削除
-	 * @param roomId 部屋ID
+	 * @param roomId - 部屋ID
 	 */
 	public deleteRoom(roomId: string): void{
 		if(roomId in this.rooms){
@@ -193,8 +187,8 @@ export class Server {
 	}
 	/**
 	 * 部屋確認
-	 * @param roomId 部屋ID
-	 * @returns true | false
+	 * @param roomId - 部屋ID
+	 * @returns 結果
 	 */
 	public isRoom(roomId: string): boolean{
 		if(roomId in this.rooms)
@@ -204,8 +198,8 @@ export class Server {
 	}
 	/**
 	 * 部屋取得
-	 * @param roomId 部屋ID
-	 * @returns Gameクラスインスタンス | null
+	 * @param roomId - 部屋ID
+	 * @returns Gameクラスインスタンス又はNULL
 	 */
 	public getRoom(roomId: string): Game|null{
 		if(roomId in this.rooms)
@@ -213,17 +207,14 @@ export class Server {
 		else
 			return null
 	}
-	/**
-	 * 全部屋取得
-	 * @returns // {[key in string]: Game}
-	 */
+	/** 全部屋取得 */
 	public getAllRoom(): {[key in string]: Game} {
 		return this.rooms
 	}
 
 	/**
 	 * 利用者タイムアウト
-	 * @param socketId セッションID
+	 * @param socketId - セッションID
 	 */
 	public dead(socketId: string): void{
 		let name = this.users[socketId]
@@ -259,29 +250,36 @@ export class Server {
 		this.logger.log("debug", data)
 	}
 
+	/** ステータス表示を有効化 */
 	public enableStatus(): boolean{
 		return this.status.enable()
 	}
+	/** ステータス表示を無効化 */
 	public disableStatus(): boolean{
 		return this.status.disable()
 	}
 
+	/** Protocol取得 */
 	public getProtocol(): Protocol{
 		return this.network
 	}
 
+	/** CommandReader取得 */
 	public getCommandReader(): CommandReader{
 		return this.reader
 	}
 
+	/** Logger取得 */
 	public getLogger(): Logger{
 		return this.logger
 	}
 
+	/** PluginManager取得 */
 	public getPluginManager(): PluginManager{
 		return this.plugin
 	}
 
+	/** Event取得 */
 	public getEvent(): Event{
 		return this.event
 	}

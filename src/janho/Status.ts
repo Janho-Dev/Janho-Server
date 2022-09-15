@@ -36,6 +36,7 @@ export class Status {
         this.enable()
     }
 
+    /** ステータス表示の有効化 */
     public enable(): boolean{
         if(this.timer){
             return false
@@ -72,6 +73,7 @@ export class Status {
         return true
     }
     
+    /** ステータス表示の無効化 */
     public disable(): boolean{
         if(this.timer){
             clearInterval(this.timer)

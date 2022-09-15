@@ -24,6 +24,12 @@
  */
 
 export class Judge {
+
+    /**
+     * オブジェクトの配列・ハッシュ型判定
+     * @param obj - オブジェクト
+     * @returns 結果
+     */
     static judgeArrOrHash(obj: any): string{
         if((typeof obj) === "object"){
             if(obj === null) return (typeof obj)

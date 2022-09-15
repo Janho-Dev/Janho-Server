@@ -35,6 +35,7 @@ export class PluginLogger {
         this.logger = logger
     }
 
+    /** プラグイン用ログ関数 */
     public log(level: Types.level_type, message: any, id?: Types.log_id){
         this.logger.log(level, `[${this.plugin_name}] ` + message, id)
     }

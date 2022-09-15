@@ -37,6 +37,12 @@ export class Logger {
         this.exception = {"": false}
     }
 
+    /**
+     * 標準出力にログを出力
+     * @param level - ログレベル
+     * @param message - 出力内容
+     * @param id - ログID
+     */
     public log(level: Types.level_type, message: any, id?: Types.log_id){
         if(!(this.status)) return
         if(id !== undefined){
@@ -65,32 +71,46 @@ export class Logger {
         }
     }
 
+    /**
+     * 標準出力に出力
+     * @param message - 出力内容
+     */
     public send(message: string){
         if(!(this.status)) return
         console.log(message + Color.reset)
     }
 
+    /** 加工済みのタイムスタンプ取得 */
     public getTimeStr(): string{
         const date = new Date()
         const timeStr = String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") + ":" + String(date.getSeconds()).padStart(2, "0")
         return timeStr
     }
 
+    /**
+     * デバッグモード切替
+     * @param bool - デバッグモードの有無
+     * @param log - 変更後のメッセージを表示するか
+     */
     public setDebug(bool: boolean, log: boolean = true){
         this.debug = bool
         if(log) this.log("notice", "Debug mode changed to " + bool + ".")
     }
+    /** デバッグモードの状態取得 */
     public getDebug(): boolean{
         return this.debug
     }
 
+    /** デバッグモード有効化 */
     public enable(){
         this.status = true
     }
+    /** デバッグモード無効化 */
     public disable(){
         this.status = false
     }
 
+    /** 標準出力で改行 */
     public newLine(){
         if(!(this.status)) return
         console.log("")

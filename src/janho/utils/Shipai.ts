@@ -26,6 +26,7 @@
 import * as Types from "../utils/Types"
 
 export class Shipai {
+    
     /**
      * 洗牌
      * 

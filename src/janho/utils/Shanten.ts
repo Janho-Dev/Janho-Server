@@ -27,8 +27,24 @@ import * as Types from "./Types"
 
 export class Shanten {
 
-    static getHai(tehai: number[], furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumohai: number, ronhai: number | null, param: Types.hora_info)
-    : {[key in number]: number[]} {
+    /**
+     * 捨て牌と捨てた後の聴牌をセットで取得
+     * @param tehai - 手牌
+     * @param furo - 鳴き牌
+     * @param junhai - 純牌
+     * @param tsumohai - ツモ牌
+     * @param ronhai - ロン牌
+     * @param param - パラメーター
+     * @returns 捨て牌と捨てた後の聴牌
+     */
+    static getHai(
+        tehai: number[],
+        furo: number[][],
+        junhai: {[key in Types.junhai_type]: number[]},
+        tsumohai: number,
+        ronhai: number | null,
+        param: Types.hora_info
+    ): {[key in number]: number[]} {
 
         let result: {[key: number]: number[]} = {}
 
@@ -38,13 +54,13 @@ export class Shanten {
         _junhai_["s"] = _junhai_["s"].concat(junhai["s"])
         _junhai_["j"] = _junhai_["j"].concat(junhai["j"])
 
-        //捨てた後のシャン点数0以下 = 捨て可能牌
+        // 捨てた後のシャン点数0以下 = 捨て可能牌
         let _tehai = tehai.slice()
         _tehai.push(tsumohai)
         for(let hai of _tehai){
             let __tehai = _tehai.slice()
             __tehai.splice(__tehai.indexOf(hai), 1)
-            //
+
             let _junhai = {"m": [0,0,0,0,0,0,0,0,0,0], "p": [0,0,0,0,0,0,0,0,0,0], "s": [0,0,0,0,0,0,0,0,0,0], "j": [0,0,0,0,0,0,0,0]}
             for(let _hai of __tehai){
                 const s = Math.floor(_hai / 100) % 10
@@ -67,7 +83,7 @@ export class Shanten {
                         break;
                 }
             }
-            //
+
 
             let __junhai_: {[key in Types.junhai_type]: number[]} = {"m": [], "p": [], "s": [], "j": []}
             __junhai_["m"] = __junhai_["m"].concat(_junhai["m"])
@@ -87,9 +103,9 @@ export class Shanten {
 
     /**
      * 向聴数の解
-     * @param furo 牌ID[][]
-     * @param junhai // {[key in Types.junhai_type]: number[]}
-     * @param tsumo 牌ID | [] | null
+     * @param furo 鳴き牌
+     * @param junhai 純牌
+     * @param tsumo ツモ牌
      * @returns 純向聴数
      */
     static shanten(furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, tsumo: number[] | number | null): number{
@@ -102,8 +118,8 @@ export class Shanten {
 
     /**
      * 七対子向聴数計算
-     * @param furo 牌ID[][]
-     * @param _junhai // {[key in Types.junhai_type]: number[]}
+     * @param furo 鳴き牌
+     * @param _junhai 純牌
      * @returns 向聴数
      */
     private static shanten_chitoi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): number{
@@ -126,8 +142,8 @@ export class Shanten {
     }
     /**
      * 国士無双向聴数計算
-     * @param furo 牌ID[][]
-     * @param _junhai // {[key in Types.junhai_type]: number[]}
+     * @param furo 鳴き牌
+     * @param _junhai 純牌
      * @returns 向聴数
      */
     static shanten_kokushi(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}): number{
@@ -148,9 +164,9 @@ export class Shanten {
     }
     /**
      * 一般向聴数計算
-     * @param furo 牌ID[][]
-     * @param _junhai // {[key in Types.junhai_type]: number[]}
-     * @param tsumo 牌ID | [] | null
+     * @param furo 鳴き牌
+     * @param _junhai 純牌
+     * @param tsumo ツモ牌
      * @returns 向聴数
      */
     private static shanten_ippan(furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumo: number[] | number | null): number{
@@ -178,9 +194,9 @@ export class Shanten {
 
     /**
      * 向聴数計算
-     * @param furo 牌ID[][]
-     * @param junhai // {[key in Types.junhai_type]: number[]}
-     * @param janto 雀頭 true | false
+     * @param furo 鳴き牌
+     * @param junhai 純牌
+     * @param janto 雀頭
      * @returns 向聴数
      */
     private static mentsu_all(furo: number[][], junhai: {[key in Types.junhai_type]: number[]}, janto = false): number{
@@ -219,9 +235,9 @@ export class Shanten {
     }
     /**
      * 面子抜き取り
-     * @param hai 牌ID[]
+     * @param hai 牌ID
      * @param n 位置
-     * @returns // {a: number[], b: number[]}
+     * @returns 面子
      */
     private static mentsu(hai: number[], n: number = 1): {a: number[], b: number[]}{
         if(n > 9) return this.tatsu(hai)
@@ -260,8 +276,8 @@ export class Shanten {
     }
     /**
      * 搭子計算
-     * @param hai 牌ID[]
-     * @returns // {a: number[], b: number[]}
+     * @param hai 牌ID
+     * @returns 搭子
      */
     private static tatsu(hai: number[]): {a: number[], b: number[]}{
         let n_hai = 0
@@ -291,7 +307,7 @@ export class Shanten {
      * @param mentsu 面子数
      * @param tatsu 搭子数
      * @param koritsu 孤立牌数
-     * @param janto 雀頭 true | false
+     * @param janto 雀頭
      * @returns 向聴数
      */
     private static _shanten(mentsu: number, tatsu: number, koritsu: number, janto: boolean): number{
@@ -311,6 +327,13 @@ export class Shanten {
         return 13 - mentsu * 3 - tatsu * 2 - koritsu
     }
 
+    /**
+     * 聴牌取得
+     * @param furo 鳴き牌
+     * @param _junhai 純牌
+     * @param tsumo ツモ牌
+     * @returns 聴牌
+     */
     public static tenpai(
         furo: number[][], _junhai: {[key in Types.junhai_type]: number[]}, tsumo: number[] | number | null
     ): number[] | null{
