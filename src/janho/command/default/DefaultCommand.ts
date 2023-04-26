@@ -23,8 +23,17 @@
  * 
  */
 
+/** コマンドインタフェース */
 export interface DefaultCommand {
+    // コマンドの説明文
     readonly description: string
+
+    // コマンドの使い方
     readonly usage: string
+
+    /**
+     * コマンド実行時メソッド
+     * @param args コマンド引数
+     */
     execute(args: string[]): void;
 }

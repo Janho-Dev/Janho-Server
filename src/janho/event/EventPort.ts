@@ -23,7 +23,7 @@
  * 
  */
 
-import {EventEmitter} from "./EventEmitter";
+import { EventEmitter } from "./EventEmitter";
 
 export class EventPort<T extends (...args: any[]) => void> {
     private readonly _name: string | symbol

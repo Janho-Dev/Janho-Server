@@ -24,11 +24,11 @@
  */
 
 import * as janho from "../../Server"
-import {parse} from "csv-parse/sync"
 import fs from "fs"
 import path from "path"
-import {DefaultCommand} from "./DefaultCommand"
-import {Color} from "../../utils/Color"
+import { parse } from "csv-parse/sync"
+import { DefaultCommand } from "./DefaultCommand"
+import { Color } from "../../utils/Color"
 
 export class LicenseCommand implements DefaultCommand {
     private readonly server: janho.Server

@@ -25,6 +25,7 @@
 
 import * as Types from "../utils/Types"
 
+/** 麻雀対局用の標準関数をまとめたインタフェース */
 export interface Game {
     join(socketId: string): boolean
     ready(socketId: string, bool: boolean): boolean

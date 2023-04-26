@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {ServerEvent} from "./ServerEvent";
+import { Event } from "../Event";
+import { ServerEvent } from "./ServerEvent";
 
 export class RoomDeleteEvent extends ServerEvent{
     private readonly roomId: string

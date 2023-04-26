@@ -23,7 +23,7 @@
  * 
  */
 
-import {DefaultCommand} from "./DefaultCommand"
+import { DefaultCommand } from "./DefaultCommand"
 
 export class StopCommand implements DefaultCommand {
     readonly description: string

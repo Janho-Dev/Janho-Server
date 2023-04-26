@@ -23,9 +23,10 @@
  * 
  */
 
-import {Event} from "../Event";
-import {EventBase} from "../EventBase";
+import { Event } from "../Event";
+import { EventBase } from "../EventBase";
 
+/** サーバーイベント用抽象クラス */
 export abstract class ServerEvent extends EventBase{
     constructor(event: Event){
         super(event)

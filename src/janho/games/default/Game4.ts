@@ -30,16 +30,17 @@
  */
 import * as janho from "../../Server"
 import * as Types from "../../utils/Types"
-import {Color} from "../../utils/Color"
-import {Game} from "../Game"
-import {Hora} from "../../utils/Hora"
-import {Shipai} from "../../utils/Shipai"
-import {Logger} from "../../Logger"
-import {Candidate} from "../../utils/Candidate"
-import {GameBase} from "./GameBase"
-import {Shanten} from "../../utils/Shanten"
-import {Game4AI} from "../default/Game4AI"
+import { Color } from "../../utils/Color"
+import { Game } from "../Game"
+import { Hora } from "../../utils/Hora"
+import { Shipai } from "../../utils/Shipai"
+import { Logger } from "../../Logger"
+import { Candidate } from "../../utils/Candidate"
+import { GameBase } from "./GameBase"
+import { Shanten } from "../../utils/Shanten"
+import { Game4AI } from "../default/Game4AI"
 
+/** 四人麻雀 要リファクタリング */
 export class Game4 extends GameBase implements Game {
     private readonly hosterId: string
     private players: {[key: string]: Types.player_status}

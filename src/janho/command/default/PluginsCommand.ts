@@ -24,8 +24,8 @@
  */
 
 import * as janho from "../../Server"
-import {Color} from "../../utils/Color"
-import {DefaultCommand} from "./DefaultCommand"
+import { Color } from "../../utils/Color"
+import { DefaultCommand } from "./DefaultCommand"
 
 export class PluginsCommand implements DefaultCommand {
     private readonly server: janho.Server

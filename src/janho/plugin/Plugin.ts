@@ -23,7 +23,10 @@
  * 
  */
 
+/** プラグインインタフェース */
 export interface Plugin {
+    // プラグイン有効化時実行
     onEnable(): void
+    // プラグイン無効化時実行
     onDisable(): void
 }

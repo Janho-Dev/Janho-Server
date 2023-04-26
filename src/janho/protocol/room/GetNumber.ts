@@ -24,7 +24,7 @@
  */
 
  import * as janho from "../../Server"
- import {JanhoProtocol} from "../JanhoProtocol"
+ import { JanhoProtocol } from "../JanhoProtocol"
 
 export class GetNumber implements JanhoProtocol {
     private readonly server: janho.Server

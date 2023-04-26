@@ -24,8 +24,8 @@
  */
 
 import { kaze_number, ryukyoku } from "../utils/Types"
-import {EventEmitter} from "./EventEmitter"
-import {EventPort} from "./EventPort"
+import { EventEmitter } from "./EventEmitter"
+import { EventPort } from "./EventPort"
 
 export class Event{
     private readonly emitter: EventEmitter

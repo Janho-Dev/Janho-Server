@@ -23,9 +23,10 @@
  * 
  */
 
-import {Event} from "../Event";
-import {EventBase} from "../EventBase";
+import { Event } from "../Event";
+import { EventBase } from "../EventBase";
 
+/** プラグインイベント用抽象クラス */
 export abstract class PluginEvent extends EventBase{
     constructor(event: Event){
         super(event)

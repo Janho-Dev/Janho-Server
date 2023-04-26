@@ -24,7 +24,7 @@
  */
 
 import * as Types from "../utils/Types"
-import {Logger} from "../Logger"
+import { Logger } from "../Logger"
 
 export class PluginLogger {
     private readonly logger: Logger
@@ -35,7 +35,12 @@ export class PluginLogger {
         this.logger = logger
     }
 
-    /** プラグイン用ログ関数 */
+    /**
+     * プラグイン用ログ関数
+     * @param level ログレベル
+     * @param message メッセージ内容
+     * @param id 任意のログID
+     */
     public log(level: Types.level_type, message: any, id?: Types.log_id){
         this.logger.log(level, `[${this.plugin_name}] ` + message, id)
     }

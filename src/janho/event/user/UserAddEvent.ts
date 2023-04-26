@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {UserEvent} from "./UserEvent";
+import { Event } from "../Event";
+import { UserEvent } from "./UserEvent";
 
 export class UserAddEvent extends UserEvent{
 

@@ -23,8 +23,9 @@
  * 
  */
 
-import {Event} from "./Event";
+import { Event } from "./Event";
 
+/** イベントインタフェース */
 export abstract class EventBase{
     protected readonly event: Event
 
@@ -32,6 +33,7 @@ export abstract class EventBase{
         this.event = event
     }
 
+    /** イベント実行メソッド */
     public emit(){
         this.event.event()
     }

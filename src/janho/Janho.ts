@@ -34,17 +34,17 @@ import * as janho from "./Server"
 import fs from "fs"
 import util from "util"
 import path from "path"
-import {createServer} from "https"
-import {readFileSync} from "fs"
-import {performance} from "perf_hooks"
-import {Judge} from "./utils/Judge"
-import {VersionInfo} from "./VersionInfo"
-import {SocketConnectEvent} from "./event/socket/SocketConnectEvent"
-import {SocketDisconnectEvent} from "./event/socket/SocketDisconnectEvent"
-import {SocketReceiveEvent} from "./event/socket/SocketReceiveEvent"
-import {ServerStopEvent} from "./event/server/ServerStopEvent"
-import {ServerPreLoadEvent} from "./event/server/ServerPreLoadEvent"
-import {ServerLoadEvent} from "./event/server/ServerLoadEvent"
+import { createServer } from "https"
+import { readFileSync } from "fs"
+import { performance } from "perf_hooks"
+import { Judge } from "./utils/Judge"
+import { VersionInfo } from "./VersionInfo"
+import { SocketConnectEvent } from "./event/socket/SocketConnectEvent"
+import { SocketDisconnectEvent } from "./event/socket/SocketDisconnectEvent"
+import { SocketReceiveEvent } from "./event/socket/SocketReceiveEvent"
+import { ServerStopEvent } from "./event/server/ServerStopEvent"
+import { ServerPreLoadEvent } from "./event/server/ServerPreLoadEvent"
+import { ServerLoadEvent } from "./event/server/ServerLoadEvent"
 
 const S_TIME = performance.now()
 const app: express.Express = express.default()
@@ -99,7 +99,7 @@ async function initialize(https: boolean, key: string, cert: string): Promise<vo
     io = new socketio.Server(hoster, {
         allowEIO3: true,
         cors: {
-            origin: ["file://", "http://localhost:7456"],
+            origin: ["file://", "http://localhost:7456"], //todo
             methods: ["GET", "POST"]
         }
     })

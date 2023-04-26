@@ -24,21 +24,21 @@
  */
 
 import * as socketio from "socket.io"
-import {Game} from "./games/Game"
-import {Game4} from "./games/default/Game4"
-import {Protocol} from "./protocol/Protocol"
-import {Logger} from "./Logger"
-import {CommandReader} from "./command/CommandReader"
-import {Status} from "./Status"
-import {PluginManager} from "./plugin/PluginManager"
-import {Event} from "./event/Event"
-import {UserAddEvent} from "./event/user/UserAddEvent"
-import {UserDeleteEvent} from "./event/user/UserDeleteEvent"
-import {UserDeadEvent} from "./event/user/UserDeadEvent"
-import {ServerEmitEvent} from "./event/server/ServerEmitEvent"
-import {ServerReceiveEvent} from "./event/server/ServerReceiveEvent"
-import {RoomAddEvent} from "./event/server/RoomAddEvent"
-import {RoomDeleteEvent} from "./event/server/RoomDeleteEvent"
+import { Game } from "./games/Game"
+import { Game4 } from "./games/default/Game4"
+import { Protocol } from "./protocol/Protocol"
+import { Logger } from "./Logger"
+import { CommandReader } from "./command/CommandReader"
+import { Status } from "./Status"
+import { PluginManager } from "./plugin/PluginManager"
+import { Event } from "./event/Event"
+import { UserAddEvent } from "./event/user/UserAddEvent"
+import { UserDeleteEvent } from "./event/user/UserDeleteEvent"
+import { UserDeadEvent } from "./event/user/UserDeadEvent"
+import { ServerEmitEvent } from "./event/server/ServerEmitEvent"
+import { ServerReceiveEvent } from "./event/server/ServerReceiveEvent"
+import { RoomAddEvent } from "./event/server/RoomAddEvent"
+import { RoomDeleteEvent } from "./event/server/RoomDeleteEvent"
 
 export class Server {
 	private readonly io: socketio.Server
@@ -235,13 +235,13 @@ export class Server {
 		new Promise((resolve, reject) => {
             setTimeout(() => {
 				new ServerEmitEvent(this.getEvent(), socketId, data).emit()
-                this.io.to(socketId).emit("janho", data)
+				this.io.to(socketId).emit("janho", data)
 				this.logger.log("debug", "EMIT " + socketId)
 				this.logger.log("debug", data)
-            }, 1);
-        }).catch(() => {
-            console.error("Error: socket.io emit error.")
-        })
+			}, 1);
+		}).catch(() => {
+			console.error("Error: socket.io emit error.")
+		})
 	}
 	public onReceive(socketId: string, data: string): void{
 		new ServerReceiveEvent(this.getEvent(), socketId, data).emit()

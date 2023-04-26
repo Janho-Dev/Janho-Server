@@ -24,7 +24,7 @@
  */
 
 import * as janho from "../Server"
-import {Command} from "./Command"
+import { Command } from "./Command"
 
 export class CommandReader {
     private readonly server: janho.Server
@@ -34,11 +34,14 @@ export class CommandReader {
         this.server = server
         this.command = new Command(server)
 
+        // キー入力待ち状態にする
         process.stdin.resume()
         process.stdin.setEncoding("utf8")
 
+        // 標準入力を受け取ってコマンドイベント発生
         process.stdin.on("data", (chunk) => {
             const message = "" + chunk
+            // 制御文字をreplace
             this.command.onCommand(message.replace(/[\x00-\x1F\x7F-\x9F]/g, ""))
         })
     }

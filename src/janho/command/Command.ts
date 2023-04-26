@@ -24,22 +24,23 @@
  */
 
 import * as janho from "../Server"
-import {DefaultCommand} from "./default/DefaultCommand"
-import {DebugCommand} from "./default/DebugCommand"
-import {GetPlayersCommand} from "./default/GetPlayersCommand"
-import {GetRoomsCommand} from "./default/GetRoomsCommand"
-import {GetUsersCommand} from "./default/GetUsersCommand"
-import {HelpCommand} from "./default/HelpCommand"
-import {StatusCommand} from "./default/StatusCommand"
-import {StopCommand} from "./default/StopCommand"
-import {LicenseCommand} from "./default/LicenseCommand"
-import {PluginsCommand} from "./default/PluginsCommand"
-import {MonitorCommand} from "./default/MonitorCommand"
+import { DefaultCommand } from "./default/DefaultCommand"
+import { DebugCommand } from "./default/DebugCommand"
+import { GetPlayersCommand } from "./default/GetPlayersCommand"
+import { GetRoomsCommand } from "./default/GetRoomsCommand"
+import { GetUsersCommand } from "./default/GetUsersCommand"
+import { HelpCommand } from "./default/HelpCommand"
+import { StatusCommand } from "./default/StatusCommand"
+import { StopCommand } from "./default/StopCommand"
+import { LicenseCommand } from "./default/LicenseCommand"
+import { PluginsCommand } from "./default/PluginsCommand"
+import { MonitorCommand } from "./default/MonitorCommand"
 
 export class Command {
     private readonly server: janho.Server
     private commands: {[key: string]: DefaultCommand} = {}
 
+    // コマンドの登録・リスト化
     constructor(server: janho.Server){
         this.server = server
         this.commands = {
@@ -56,18 +57,29 @@ export class Command {
         }
     }
 
+    /**
+     * コマンド実行時に種類を判定しコマンドクラスにて実行させる
+     * @param message コマンド全文
+     */
     public onCommand(message: string){
         const commands = message.split(" ")
         const command = commands[0]
+        // コマンド名の部分を取り出し検索する
         const commandClass = this.getCommand(command)
         commands.splice(0, 1)
         if(commandClass !== null){
+            // コマンド名を除いたコマンド引数をコマンドクラスに送る
             commandClass.execute(commands)
         }else{
             this.server.getLogger().log("error", "There is no such command.")
         }
     }
 
+    /**
+     * 同じ名前のコマンドクラスを取得する
+     * @param command コマンド名
+     * @returns DefaultCommand インスタンス
+     */
     public getCommand(command: string): DefaultCommand | null{
         if(command in this.commands)
             return this.commands[command]
@@ -75,6 +87,10 @@ export class Command {
             return null
     }
 
+    /**
+     * 全てのコマンドクラスを取得する
+     * @returns キー：コマンド名 => DefaultCommand インスタンス
+     */
     public getAllCommand(): {[key in string]: DefaultCommand} {
         return this.commands
     }

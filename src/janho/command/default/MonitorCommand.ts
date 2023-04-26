@@ -24,8 +24,8 @@
  */
 
 import * as janho from "../../Server"
-import {DefaultCommand} from "./DefaultCommand"
-import {Game} from "../../games/Game"
+import { DefaultCommand } from "./DefaultCommand"
+import { Game } from "../../games/Game"
 
 export class MonitorCommand implements DefaultCommand {
     private readonly server: janho.Server

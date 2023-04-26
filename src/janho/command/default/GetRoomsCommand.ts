@@ -24,7 +24,7 @@
  */
 
 import * as janho from "../../Server"
-import {DefaultCommand} from "./DefaultCommand"
+import { DefaultCommand } from "./DefaultCommand"
 
 export class GetRoomsCommand implements DefaultCommand {
     private readonly server: janho.Server

@@ -24,7 +24,7 @@
  */
 
 import * as Types from "./utils/Types"
-import {Color} from "./utils/Color"
+import { Color } from "./utils/Color"
 
 export class Logger {
     private status: boolean
@@ -49,25 +49,26 @@ export class Logger {
             if(this.exception[id]) return
         }
         const time = "[" + this.getTimeStr() + "] "
+        const forward = Color.white + time + Color.reset
         switch(level){
             case "debug":
                 if(this.debug)
-                this.send(Color.white + time + Color.reset + Color.gray + "[DEBUG]: " + message)
+                this.send(forward + Color.gray + "[DEBUG]: " + message)
                 break
             case "info":
-                this.send(Color.white + time + Color.reset + Color.white + "[INFO]: " + message)
+                this.send(forward + Color.white + "[INFO]: " + message)
                 break
             case "notice":
-                this.send(Color.white + time + Color.reset + Color.cyan + "[NOTICE]: " + message)
+                this.send(forward + Color.cyan + "[NOTICE]: " + message)
                 break
             case "warning":
-                this.send(Color.white + time + Color.reset + Color.yellow + "[WARNING]: " + message)
+                this.send(forward + Color.yellow + "[WARNING]: " + message)
                 break
             case "error":
-                this.send(Color.white + time + Color.reset + Color.red + "[ERROR]: " + message)
+                this.send(forward + Color.red + "[ERROR]: " + message)
                 break
             case "success":
-                this.send(Color.white + time + Color.reset + Color.green + "[SUCCESS]: " + message)
+                this.send(forward + Color.green + "[SUCCESS]: " + message)
         }
     }
 

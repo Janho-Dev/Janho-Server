@@ -23,8 +23,8 @@
  * 
  */
 
-import {EventEmitter as OriginalEventEmitter} from "events"
-import {EventPort} from "./EventPort"
+import { EventEmitter as OriginalEventEmitter } from "events"
+import { EventPort } from "./EventPort"
 
 export class EventEmitter extends OriginalEventEmitter{
     public emit<T extends (...args: any[]) => void>(port: EventPort<T>, ...args: Parameters<T>): boolean;

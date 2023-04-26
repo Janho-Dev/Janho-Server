@@ -24,9 +24,10 @@
  */
 
 import * as janho from "../Server"
-import {Plugin} from "./Plugin";
-import {PluginLogger} from "./PluginLogger"
+import { Plugin } from "./Plugin";
+import { PluginLogger } from "./PluginLogger"
 
+// プラグイン用抽象クラス
 export abstract class PluginBase implements Plugin {
     protected readonly server: janho.Server
     protected readonly logger: PluginLogger

@@ -24,7 +24,7 @@
  */
 
 import * as Types from "./Types"
-import {Shanten} from "./Shanten"
+import { Shanten } from "./Shanten"
 
 export class Hora {
 

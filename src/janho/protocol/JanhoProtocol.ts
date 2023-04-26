@@ -23,7 +23,19 @@
  * 
  */
 
- export interface JanhoProtocol {
+/** プロトコル用インタフェース */
+export interface JanhoProtocol {
+    /**
+     * データを受けた際の処理
+     * @param socketId socketID
+     * @param data データ
+     */
     procReceive(socketId: string, data: string):void;
+
+    /**
+     * データを送る際の処理
+     * @param socketId socketID
+     * @param json データ
+     */
     procEmit(socketId: string, json: {}):void;
 }

@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {PluginEvent} from "./PluginEvent";
+import { Event } from "../Event";
+import { PluginEvent } from "./PluginEvent";
 
 export class PluginUnloadEvent extends PluginEvent{
 

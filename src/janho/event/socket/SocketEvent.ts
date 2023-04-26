@@ -23,9 +23,10 @@
  * 
  */
 
-import {Event} from "../Event";
-import {EventBase} from "../EventBase";
+import { Event } from "../Event";
+import { EventBase } from "../EventBase";
 
+/** ソケットイベント用抽象クラス */
 export abstract class SocketEvent extends EventBase{
     protected readonly socketId: string
 

@@ -49,6 +49,7 @@ import { ShukyokuEvent } from "../../event/game/mahjong/ShukyokuEvent"
 import { RyukyokuByPlayerEvent } from "../../event/game/mahjong/RyukyokuByPlayerEvent"
 import { ManyHoraEvent } from "../../event/game/mahjong/ManyHoraEvent"
 
+/** 麻雀対局時のイベント発生用抽象クラス */
 export abstract class GameBase{
     protected readonly server: janho.Server
     protected readonly roomId: string

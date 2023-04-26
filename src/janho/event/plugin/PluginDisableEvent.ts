@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {PluginEvent} from "./PluginEvent";
+import { Event } from "../Event";
+import { PluginEvent } from "./PluginEvent";
 
 export class PluginDisableEvent extends PluginEvent{
     private readonly name: string

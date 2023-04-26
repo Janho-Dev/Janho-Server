@@ -25,6 +25,7 @@
 
 import {Game4} from "./Game4";
 
+/** 四人麻雀用ひたすらツモ切りするAI(AIではない) */
 export class Game4AI {
     private readonly parent: Game4
 

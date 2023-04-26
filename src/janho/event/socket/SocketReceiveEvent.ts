@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {SocketEvent} from "./SocketEvent";
+import { Event } from "../Event";
+import { SocketEvent } from "./SocketEvent";
 
 export class SocketReceiveEvent extends SocketEvent{
     private readonly data: string

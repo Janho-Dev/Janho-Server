@@ -23,9 +23,9 @@
  * 
  */
 
-import {kaze_number, ryukyoku} from "../../../utils/Types";
-import {Event} from "../../Event";
-import {GameEvent} from "../GameEvent";
+import { kaze_number, ryukyoku } from "../../../utils/Types";
+import { Event } from "../../Event";
+import { GameEvent } from "../GameEvent";
 
 export class RyukyokuByPlayerEvent extends GameEvent{
     private readonly kaze: kaze_number

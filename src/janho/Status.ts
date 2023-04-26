@@ -24,7 +24,7 @@
  */
 
 import * as janho from "./Server"
-import {VersionInfo} from "./VersionInfo"
+import { VersionInfo } from "./VersionInfo"
 
 export class Status {
     private readonly server: janho.Server

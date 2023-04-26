@@ -23,8 +23,8 @@
  * 
  */
 
-import {Event} from "../Event";
-import {GameEvent} from "./GameEvent";
+import { Event } from "../Event";
+import { GameEvent } from "./GameEvent";
 
 export class PlayerJoinEvent extends GameEvent{
     private readonly socketId: string

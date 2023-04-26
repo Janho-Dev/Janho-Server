@@ -23,9 +23,10 @@
  * 
  */
 
-import {Event} from "../Event";
-import {EventBase} from "../EventBase";
+import { Event } from "../Event";
+import { EventBase } from "../EventBase";
 
+/** ゲームイベント用抽象クラス */
 export abstract class GameEvent extends EventBase{
     protected readonly roomId: string
 
